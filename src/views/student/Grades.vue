@@ -1,0 +1,778 @@
+<template>
+  <div class="grades-container">
+    <div class="page-header">
+      <div class="header-left">
+        <h1>成绩总览</h1>
+        <p class="header-desc">查看您的所有作业成绩和统计数据</p>
+      </div>
+      <div class="header-right">
+        <el-button type="primary" @click="exportGrades">
+          <el-icon><Download /></el-icon>
+          导出成绩
+        </el-button>
+      </div>
+    </div>
+    
+    <div class="stats-overview">
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon" style="background-color: var(--primary-bg);">
+            <el-icon :size="24" style="color: var(--primary-color);"><Document /></el-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.totalAssignments }}</span>
+            <span class="stat-label">作业总数</span>
+          </div>
+        </div>
+      </el-card>
+      
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon" style="background-color: var(--success-bg);">
+            <el-icon :size="24" style="color: var(--success-color);"><CircleCheck /></el-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.completedAssignments }}</span>
+            <span class="stat-label">已完成</span>
+          </div>
+        </div>
+      </el-card>
+      
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon" style="background-color: var(--warning-bg);">
+            <el-icon :size="24" style="color: var(--warning-color);"><TrendCharts /></el-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">{{ stats.avgScore }}</span>
+            <span class="stat-label">平均分</span>
+          </div>
+        </div>
+      </el-card>
+      
+      <el-card class="stat-card">
+        <div class="stat-content">
+          <div class="stat-icon" style="background-color: var(--danger-bg);">
+            <el-icon :size="24" style="color: var(--danger-color);"><Trophy /></el-icon>
+          </div>
+          <div class="stat-info">
+            <span class="stat-value">#{{ stats.ranking }}</span>
+            <span class="stat-label">班级排名</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
+    
+    <el-card class="filter-card">
+      <div class="filter-row">
+        <el-select v-model="filterCourse" placeholder="选择课程" clearable class="filter-select">
+          <el-option label="全部课程" value="" />
+          <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+        </el-select>
+        
+        <el-select v-model="filterStatus" placeholder="完成状态" clearable class="filter-select">
+          <el-option label="全部状态" value="" />
+          <el-option label="已完成" value="completed" />
+          <el-option label="部分通过" value="partial" />
+          <el-option label="未通过" value="failed" />
+          <el-option label="未完成" value="pending" />
+        </el-select>
+        
+        <el-select v-model="filterScoreRange" placeholder="分数范围" clearable class="filter-select">
+          <el-option label="全部分数" value="" />
+          <el-option label="90-100分" value="90-100" />
+          <el-option label="80-89分" value="80-89" />
+          <el-option label="60-79分" value="60-79" />
+          <el-option label="60分以下" value="0-59" />
+        </el-select>
+        
+        <el-input
+          v-model="searchKeyword"
+          placeholder="搜索作业名称"
+          prefix-icon="Search"
+          clearable
+          class="search-input"
+        />
+      </div>
+    </el-card>
+    
+    <el-card class="grades-card">
+      <el-table :data="filteredGrades" style="width: 100%" @row-click="viewDetail">
+        <el-table-column prop="courseName" label="课程" width="180" />
+        <el-table-column prop="assignmentName" label="作业名称" min-width="200">
+          <template #default="scope">
+            <div class="assignment-name">
+              <span class="name">{{ scope.row.assignmentName }}</span>
+              <span class="deadline">截止：{{ scope.row.deadline }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100" align="center">
+          <template #default="scope">
+            <el-tag :type="scope.row.status === 'completed' ? 'success' : scope.row.status === 'partial' ? '' : scope.row.status === 'failed' ? 'danger' : 'warning'" effect="dark" size="small">
+              {{ scope.row.status === 'completed' ? '已完成' : scope.row.status === 'partial' ? '部分通过' : scope.row.status === 'failed' ? '未通过' : '未完成' }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="score" label="得分" width="120" align="center">
+          <template #default="scope">
+            <div v-if="scope.row.score !== null" class="score-display">
+              <span class="score" :class="getScoreClass(scope.row.score)">
+                {{ scope.row.score }}
+              </span>
+              <span class="score-total">/ {{ scope.row.totalScore }}</span>
+            </div>
+            <span v-else class="no-score">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="passRate" label="通过率" width="120" align="center">
+          <template #default="scope">
+            <el-progress
+              v-if="scope.row.passRate !== null"
+              :percentage="scope.row.passRate"
+              :color="getProgressColor(scope.row.passRate)"
+              :stroke-width="8"
+            />
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="submitTime" label="提交时间" width="160" />
+        <el-table-column label="操作" width="120" fixed="right">
+          <template #default="scope">
+            <el-button
+              v-if="scope.row.status === 'completed' || scope.row.status === 'partial'"
+              type="primary"
+              link
+              size="small"
+              @click.stop="viewDetail(scope.row)"
+            >
+              查看详情
+            </el-button>
+            <el-button
+              v-else
+              type="primary"
+              link
+              size="small"
+              @click.stop="goToSubmit(scope.row)"
+            >
+              去提交
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-card>
+    
+    <el-dialog
+      v-model="detailDialogVisible"
+      title="成绩详情"
+      width="900px"
+      :close-on-click-modal="false"
+    >
+      <div v-if="selectedGrade" class="detail-content">
+        <div class="detail-header">
+          <div class="detail-info">
+            <h2>{{ selectedGrade.assignmentName }}</h2>
+            <p class="detail-meta">
+              <span>{{ selectedGrade.courseName }}</span>
+              <span class="divider">|</span>
+              <span>提交时间：{{ selectedGrade.submitTime }}</span>
+            </p>
+          </div>
+          <div class="detail-score">
+            <div class="score-circle" :class="getScoreClass(selectedGrade.score || 0)">
+              <span class="score-num">{{ selectedGrade.score || 0 }}</span>
+              <span class="score-unit">分</span>
+            </div>
+          </div>
+        </div>
+        
+        <el-divider />
+        
+        <div class="detail-stats">
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedGrade.passedCases }}/{{ selectedGrade.totalCases }}</span>
+            <span class="stat-label">通过用例</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedGrade.passRate }}%</span>
+            <span class="stat-label">通过率</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">{{ selectedGrade.runtime }}ms</span>
+            <span class="stat-label">运行时间</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-value">#{{ selectedGrade.ranking }}</span>
+            <span class="stat-label">排名</span>
+          </div>
+        </div>
+        
+        <div class="testcases-detail">
+          <h3>测试用例详情</h3>
+          <div class="testcases-list">
+            <div
+              v-for="(tc, index) in selectedGrade.testCases"
+              :key="index"
+              class="testcase-item"
+              :class="tc.passed ? 'passed' : 'failed'"
+            >
+              <div class="testcase-header">
+                <span class="testcase-name">用例 {{ (index as number) + 1 }}</span>
+                <el-tag :type="tc.passed ? 'success' : 'danger'" size="small">
+                  {{ tc.passed ? '通过' : '失败' }}
+                </el-tag>
+              </div>
+              <div class="testcase-body">
+                <div class="testcase-row">
+                  <span class="row-label">输入：</span>
+                  <pre class="row-code">{{ tc.input }}</pre>
+                </div>
+                <div class="testcase-row">
+                  <span class="row-label">期望输出：</span>
+                  <pre class="row-code expected">{{ tc.expectedOutput }}</pre>
+                </div>
+                <div v-if="!tc.passed" class="testcase-row">
+                  <span class="row-label">实际输出：</span>
+                  <pre class="row-code actual">{{ tc.actualOutput }}</pre>
+                </div>
+                <div class="testcase-row">
+                  <span class="row-label">执行时间：</span>
+                  <span class="row-value">{{ tc.executionTime }}ms</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <template #footer>
+        <el-button @click="detailDialogVisible = false">关闭</el-button>
+        <el-button type="primary" @click="retrySubmit">重新提交</el-button>
+      </template>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { request } from '../../api/interceptors'
+import { getAssignments } from '../../api/assignment'
+import { getCourses } from '../../api/course'
+import { 
+  Download, 
+  Document, 
+  CircleCheck, 
+  TrendCharts, 
+  Trophy 
+} from '@element-plus/icons-vue'
+
+const router = useRouter()
+
+const filterCourse = ref('')
+const filterStatus = ref('')
+const filterScoreRange = ref('')
+const searchKeyword = ref('')
+const detailDialogVisible = ref(false)
+const selectedGrade = ref<any>(null)
+
+const stats = ref({
+  totalAssignments: 0,
+  completedAssignments: 0,
+  avgScore: 0,
+  ranking: 0
+})
+
+const courses = ref([])
+const grades = ref([])
+
+const loadGrades = async () => {
+  try {
+    const [submissionsRes, assignmentsRes, coursesRes] = await Promise.all([
+      request.get('/submissions/my'),
+      getAssignments(),
+      getCourses()
+    ])
+
+    // 课程映射
+    const courseMap: Record<number, string> = {}
+    if (coursesRes.code === 200 && coursesRes.data) {
+      for (const c of (coursesRes.data || [])) {
+        courseMap[c.course_id || c.id] = c.course_name || c.name
+      }
+    }
+
+    // 作业映射
+    const asgnMap: Record<number, any> = {}
+    if (assignmentsRes.code === 200 && assignmentsRes.data) {
+      for (const a of (assignmentsRes.data || [])) {
+        asgnMap[a.assignment_id || a.id] = a
+      }
+    }
+
+    // 成绩列表 — 按作业去重，取最佳提交
+    if (submissionsRes.code === 200 && submissionsRes.data) {
+      const list = submissionsRes.data || []
+      // 按作业取最高分
+      const bestByAsgn: Record<number, any> = {}
+      for (const s of list) {
+        const aid = s.assignment_id
+        const score = s.overall_score ?? s.score ?? 0
+        if (!bestByAsgn[aid] || score > (bestByAsgn[aid].overall_score ?? 0)) {
+          bestByAsgn[aid] = s
+        }
+      }
+
+      grades.value = Object.values(bestByAsgn).map((s: any) => {
+        const asgn = asgnMap[s.assignment_id]
+        return {
+          id: s.submission_id || s.id,
+          courseId: asgn ? (asgn.course_id || asgn.class_id) : '',
+          courseName: asgn ? (courseMap[asgn.course_id] || asgn.class_name || '') : (s.assignment_title || ''),
+          assignmentId: s.assignment_id,
+          assignmentName: s.assignment_title || asgn?.title || '',
+          questionId: s.question_id,
+          score: s.overall_score ?? s.score ?? 0,
+          totalScore: 100,
+          status: s.status === 'COMPLETED'
+            ? ((s.passed_count || 0) >= (s.total_count || 1) ? 'completed' : (s.passed_count || 0) > 0 ? 'partial' : 'failed')
+            : 'pending',
+          language: s.language || '',
+          submitTime: s.submitted_at || s.submitTime || '',
+          passedCount: s.passed_count || 0,
+          totalCount: s.total_count || 0,
+          passRate: s.total_count > 0 ? Math.round((s.passed_count || 0) / s.total_count * 100) : null,
+          passedCases: s.passed_count || 0,
+          totalCases: s.total_count || 0
+        }
+      })
+
+      // 计算统计数据
+      const scored = grades.value.filter((g: any) => g.score > 0)
+      stats.value = {
+        totalAssignments: grades.value.length,
+        completedAssignments: grades.value.filter((g: any) => g.status === 'completed' || g.status === 'partial').length,
+        avgScore: scored.length > 0 ? Math.round(scored.reduce((sum: number, g: any) => sum + g.score, 0) / scored.length * 10) / 10 : 0,
+        ranking: 0
+      }
+    }
+  } catch (e) {
+    console.error('加载成绩失败:', e)
+  }
+}
+
+const filteredGrades = computed(() => {
+  let result = grades.value
+  
+  if (filterCourse.value) {
+    result = result.filter(g => g.courseId === filterCourse.value)
+  }
+  
+  if (filterStatus.value) {
+    result = result.filter(g => g.status === filterStatus.value)
+  }
+  
+  if (filterScoreRange.value) {
+    const [min, max] = filterScoreRange.value.split('-').map(Number)
+    result = result.filter(g => g.score !== null && g.score >= min && g.score <= max)
+  }
+  
+  if (searchKeyword.value) {
+    const keyword = searchKeyword.value.toLowerCase()
+    result = result.filter(g => 
+      g.assignmentName.toLowerCase().includes(keyword) ||
+      g.courseName.toLowerCase().includes(keyword)
+    )
+  }
+  
+  return result
+})
+
+const getScoreClass = (score: number): string => {
+  if (score >= 90) return 'excellent'
+  if (score >= 80) return 'good'
+  if (score >= 60) return 'average'
+  return 'poor'
+}
+
+const getProgressColor = (percentage: number): string => {
+  if (percentage >= 80) return '#00B42A'
+  if (percentage >= 60) return '#165DFF'
+  if (percentage >= 40) return '#FF7D00'
+  return '#F53F3F'
+}
+
+const viewDetail = (row: any) => {
+  if (row.status === 'pending' || row.status === 'failed') {
+    goToSubmit(row)
+    return
+  }
+  selectedGrade.value = row
+  detailDialogVisible.value = true
+}
+
+const goToSubmit = (row: any) => {
+  router.push(`/student/coding/${row.questionId || row.id}`)
+}
+
+const retrySubmit = () => {
+  if (selectedGrade.value) {
+    router.push(`/student/coding/${selectedGrade.value.questionId || selectedGrade.value.id}`)
+  }
+}
+
+const exportGrades = () => {
+  ElMessage.success('成绩导出成功')
+}
+
+onMounted(() => {
+  loadGrades()
+})
+</script>
+
+<style scoped>
+.grades-container {
+  padding: var(--spacing-xl);
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-lg);
+}
+
+.header-left h1 {
+  color: var(--text-primary);
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--spacing-xs) 0;
+}
+
+.header-desc {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
+.stats-overview {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-card {
+  border: 1px solid var(--border-light);
+}
+
+.stat-content {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.stat-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-md);
+}
+
+.stat-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.filter-card {
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--border-light);
+}
+
+.filter-row {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.filter-select {
+  width: 160px;
+}
+
+.search-input {
+  width: 250px;
+  margin-left: auto;
+}
+
+.grades-card {
+  border: 1px solid var(--border-light);
+}
+
+.assignment-name {
+  display: flex;
+  flex-direction: column;
+}
+
+.assignment-name .name {
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.assignment-name .deadline {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.score-display {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+
+.score {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+
+.score.excellent { color: var(--success-color); }
+.score.good { color: var(--primary-color); }
+.score.average { color: var(--warning-color); }
+.score.poor { color: var(--danger-color); }
+
+.score-total {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+}
+
+.no-score {
+  color: var(--text-tertiary);
+}
+
+.detail-content {
+  padding: var(--spacing-md) 0;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.detail-info h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.detail-meta {
+  font-size: var(--font-size-sm);
+  color: var(--text-tertiary);
+  margin: 0;
+}
+
+.detail-meta .divider {
+  margin: 0 var(--spacing-sm);
+}
+
+.score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.score-circle.excellent { background: linear-gradient(135deg, #00B42A 0%, #52C41A 100%); }
+.score-circle.good { background: linear-gradient(135deg, #165DFF 0%, #4080FF 100%); }
+.score-circle.average { background: linear-gradient(135deg, #FF7D00 0%, #FFA940 100%); }
+.score-circle.poor { background: linear-gradient(135deg, #F53F3F 0%, #F76560 100%); }
+
+.score-num {
+  font-size: 28px;
+  font-weight: var(--font-weight-bold);
+  line-height: 1;
+}
+
+.score-unit {
+  font-size: var(--font-size-xs);
+}
+
+.detail-stats {
+  display: flex;
+  justify-content: center;
+  gap: var(--spacing-xxl);
+  padding: var(--spacing-lg);
+  background-color: var(--bg-secondary);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  display: block;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+}
+
+.stat-label {
+  display: block;
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
+}
+
+.testcases-detail h3 {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-md) 0;
+}
+
+.testcases-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.testcase-item {
+  border: 1px solid var(--border-light);
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+}
+
+.testcase-item.passed {
+  border-left: 4px solid var(--success-color);
+}
+
+.testcase-item.failed {
+  border-left: 4px solid var(--danger-color);
+}
+
+.testcase-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--bg-secondary);
+}
+
+.testcase-name {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+}
+
+.testcase-body {
+  padding: var(--spacing-md);
+}
+
+.testcase-row {
+  margin-bottom: var(--spacing-sm);
+}
+
+.testcase-row:last-child {
+  margin-bottom: 0;
+}
+
+.row-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  display: block;
+  margin-bottom: var(--spacing-xs);
+}
+
+.row-code {
+  background-color: var(--bg-tertiary);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-family: var(--font-family-code);
+  font-size: var(--font-size-xs);
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.row-code.expected {
+  border-left: 3px solid var(--success-color);
+}
+
+.row-code.actual {
+  border-left: 3px solid var(--danger-color);
+}
+
+.row-value {
+  font-size: var(--font-size-sm);
+  color: var(--text-primary);
+}
+
+@media (max-width: 1200px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grades-container {
+    padding: var(--spacing-md);
+  }
+  
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-md);
+  }
+  
+  .stats-overview {
+    grid-template-columns: 1fr;
+  }
+  
+  .filter-row {
+    flex-direction: column;
+  }
+  
+  .filter-select,
+  .search-input {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .detail-header {
+    flex-direction: column;
+    gap: var(--spacing-lg);
+    align-items: center;
+    text-align: center;
+  }
+  
+  .detail-stats {
+    flex-wrap: wrap;
+    gap: var(--spacing-lg);
+  }
+}
+</style>
