@@ -52,12 +52,16 @@ axiosInstance.interceptors.response.use(
   (error) => {
     console.error('[Response Error]', error)
     if (error.response) {
+      // 新增：打印完整的后端返回数据，方便调试
+      console.error('[Response Error Status]', error.response.status)
+      console.error('[Response Error Data]', JSON.stringify(error.response.data, null, 2))
+      console.error('[Response Error Headers]', JSON.stringify(error.response.headers, null, 2))
+      
       switch (error.response.status) {
         case 401:
           ElMessage.error('未授权，请重新登录')
           const userStore = useUserStore()
           userStore.logout()
-          // 使用Vue路由导航，避免页面完全刷新
           router.push('/login')
           break
         case 403:
@@ -73,6 +77,10 @@ axiosInstance.interceptors.response.use(
           } else if (error.response.data?.data?.errors) {
             const msgs = error.response.data.data.errors.map((e: any) => e.message).join('; ')
             ElMessage.error(msgs || '请求参数错误')
+          } else if (error.response.data?.message) {
+            ElMessage.error(error.response.data.message)
+          } else if (typeof error.response.data === 'string') {
+            ElMessage.error(error.response.data)
           } else {
             ElMessage.error('请求参数错误')
           }
@@ -93,7 +101,6 @@ axiosInstance.interceptors.response.use(
 
 // Mock请求处理函数
 const mockRequest = (url: string, method: string, data?: any) => {
-  // 使用完整的 API 路径进行匹配（包含 /api/v1 前缀）
   const fullUrl = '/api/v1' + url
   console.log('[Mock] 检查请求:', fullUrl, method)
   
@@ -102,7 +109,6 @@ const mockRequest = (url: string, method: string, data?: any) => {
     const mockMethod = m.method?.toLowerCase()
     const matchMethod = mockMethod === method.toLowerCase()
     
-    // 简单路径匹配（支持通配符）
     let matchUrl = false
     if (mockUrl.includes('*')) {
       const regex = new RegExp('^' + mockUrl.replace(/\*/g, '[^/]+') + '$')
@@ -123,7 +129,6 @@ const mockRequest = (url: string, method: string, data?: any) => {
     return Promise.resolve(response)
   }
   
-  // 如果没有找到mock，返回一个错误
   console.warn('[Mock] 未找到匹配的接口:', fullUrl, method)
   return Promise.reject(new Error(`Mock接口未找到: ${method} ${fullUrl}`))
 }
@@ -131,67 +136,56 @@ const mockRequest = (url: string, method: string, data?: any) => {
 // 检查是否启用Mock（默认禁用）
 const enableMock = import.meta.env.VITE_ENABLE_MOCK === 'true'
 
-// 封装的request对象，默认使用真实请求，可通过环境变量启用Mock
+// 封装的request对象
 export const request = {
   get: async (url: string, params?: any) => {
     if (enableMock) {
       try {
-        // 尝试使用mock
         return await mockRequest(url, 'get', params)
       } catch (mockError) {
-        // 如果mock失败，尝试真实请求
         console.log('[Request] Mock失败，尝试真实请求')
         return await axiosInstance.get(url, { params })
       }
     }
-    // 默认使用真实请求
     return await axiosInstance.get(url, { params })
   },
   
   post: async (url: string, data?: any) => {
     if (enableMock) {
       try {
-        // 尝试使用mock
         return await mockRequest(url, 'post', data)
       } catch (mockError) {
-        // 如果mock失败，尝试真实请求
         console.log('[Request] Mock失败，尝试真实请求')
         return await axiosInstance.post(url, data)
       }
     }
-    // 默认使用真实请求
     return await axiosInstance.post(url, data)
   },
   
   put: async (url: string, data?: any) => {
     if (enableMock) {
       try {
-        // 尝试使用mock
         return await mockRequest(url, 'put', data)
       } catch (mockError) {
-        // 如果mock失败，尝试真实请求
         console.log('[Request] Mock失败，尝试真实请求')
         return await axiosInstance.put(url, data)
       }
     }
-    // 默认使用真实请求
     return await axiosInstance.put(url, data)
   },
   
   delete: async (url: string, params?: any) => {
     if (enableMock) {
       try {
-        // 尝试使用mock
         return await mockRequest(url, 'delete', params)
       } catch (mockError) {
-        // 如果mock失败，尝试真实请求
         console.log('[Request] Mock失败，尝试真实请求')
         return await axiosInstance.delete(url, { params })
       }
     }
-    // 默认使用真实请求
     return await axiosInstance.delete(url, { params })
   }
 }
 
 export default axiosInstance
+

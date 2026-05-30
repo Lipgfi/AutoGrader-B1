@@ -44,7 +44,7 @@ export default [
     }
   },
   {
-    url: '/api/v1/assignments/:id',
+    url: '/api/v1/assignments/*',
     method: 'get',
     response: ({ url }: { url: string }) => {
       const id = url.split('/').pop()
@@ -81,7 +81,7 @@ export default [
     }
   },
   {
-    url: '/api/v1/assignments/:id/submit',
+    url: '/api/v1/assignments/*/submit',
     method: 'post',
     response: () => {
       return {
@@ -92,6 +92,47 @@ export default [
           status: 'pending',
           message: '评测中，请稍候'
         }
+      }
+    }
+  },
+  {
+    url: '/api/v1/assignments/*/publish',
+    method: 'post',
+    response: ({ url }: { url: string }) => {
+      const parts = url.split('/')
+      const id = parts[parts.length - 2]
+      return {
+        code: 200,
+        message: '发布成功',
+        data: {
+          id: id,
+          status: 'published'
+        }
+      }
+    }
+  },
+  {
+    url: '/api/v1/assignments/*',
+    method: 'put',
+    response: ({ url }: { url: string }) => {
+      const id = url.split('/').pop()
+      return {
+        code: 200,
+        message: '更新成功',
+        data: {
+          id: id
+        }
+      }
+    }
+  },
+  {
+    url: '/api/v1/assignments/*',
+    method: 'delete',
+    response: ({ url }: { url: string }) => {
+      return {
+        code: 200,
+        message: '删除成功',
+        data: null
       }
     }
   }

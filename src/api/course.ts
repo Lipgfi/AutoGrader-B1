@@ -1,8 +1,8 @@
 import { request } from './interceptors'
-import type { Course, CourseCreateRequest, ApiResponse, PagedResponse } from '../types/api'
+import type { Course, CourseCreateRequest, ApiResponse } from '../types/api'
 
 // 获取课程列表
-export const getCourses = async (params?: any): Promise<ApiResponse<PagedResponse<Course>>> => {
+export const getCourses = async (params?: any): Promise<ApiResponse<any[]>> => {
   return await request.get('/courses', params)
 }
 

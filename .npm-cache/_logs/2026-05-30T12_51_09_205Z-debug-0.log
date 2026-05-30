@@ -1,0 +1,460 @@
+0 verbose cli D:\Node_js\node.exe D:\Node_js\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.6.2
+2 info using node@v24.13.0
+3 silly config load:file:D:\Node_js\node_modules\npm\npmrc
+4 silly config load:file:D:\CodingProjects\Lipengfei\B1\.npmrc
+5 silly config load:file:C:\Users\张傲楚\.npmrc
+6 silly config load:file:C:\Users\张傲楚\AppData\Roaming\npm\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--cache" ".npm-cache" "--no-audit" "--no-fund"
+9 verbose logfile logs-max:10 dir:D:\CodingProjects\Lipengfei\B1\.npm-cache\_logs\2026-05-30T12_51_09_205Z-
+10 verbose logfile D:\CodingProjects\Lipengfei\B1\.npm-cache\_logs\2026-05-30T12_51_09_205Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+13 silly idealTree buildDeps
+14 http fetch GET https://registry.npmjs.org/npm attempt 1 failed with EACCES
+15 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\alien-signals' ]
+16 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\agent-base' ]
+17 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\async-validator' ]
+18 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\axios' ]
+19 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\bundle-require' ]
+20 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\brace-expansion' ]
+21 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\connect' ]
+22 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\de-indent' ]
+23 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\dayjs' ]
+24 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\encodeurl' ]
+25 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\element-plus' ]
+26 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\es-object-atoms' ]
+27 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\estree-walker' ]
+28 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\esbuild' ]
+29 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\finalhandler' ]
+30 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\follow-redirects' ]
+31 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\hasown' ]
+32 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\highlight.js' ]
+33 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\he' ]
+34 silly reify mark retired [
+34 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\https-proxy-agent'
+34 silly reify ]
+35 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\load-tsconfig' ]
+36 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash' ]
+37 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash-es' ]
+38 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash-unified' ]
+39 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\memoize-one' ]
+40 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\minimatch' ]
+41 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\mockjs' ]
+42 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\muggle-string' ]
+43 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\nanoid' ]
+44 silly reify mark retired [
+44 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\normalize-wheel-es'
+44 silly reify ]
+45 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\on-finished' ]
+46 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\pinia' ]
+47 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\postcss' ]
+48 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\picomatch' ]
+49 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\proxy-from-env' ]
+50 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\rollup' ]
+51 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\statuses' ]
+52 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\tinyglobby' ]
+53 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\typescript' ]
+54 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\utils-merge' ]
+55 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vite-plugin-mock' ]
+56 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vite' ]
+57 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vscode-uri' ]
+58 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue' ]
+59 silly reify mark retired [
+59 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-component-type-helpers'
+59 silly reify ]
+60 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-demi' ]
+61 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-router' ]
+62 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-tsc' ]
+63 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@babel\\parser' ]
+64 silly reify mark retired [
+64 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@esbuild\\win32-x64'
+64 silly reify ]
+65 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@ctrl\\tinycolor' ]
+66 silly reify mark retired [
+66 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@element-plus\\icons-vue'
+66 silly reify ]
+67 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@popperjs\\core' ]
+68 silly reify mark retired [
+68 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\rollup-win32-x64-gnu'
+68 silly reify ]
+69 silly reify mark retired [
+69 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\rollup-win32-x64-msvc'
+69 silly reify ]
+70 silly reify mark retired [
+70 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\lodash-es'
+70 silly reify ]
+71 silly reify mark retired [
+71 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vitejs\\plugin-vue'
+71 silly reify ]
+72 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\lodash' ]
+73 silly reify mark retired [
+73 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\web-bluetooth'
+73 silly reify ]
+74 silly reify mark retired [
+74 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\language-core'
+74 silly reify ]
+75 silly reify mark retired [
+75 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\source-map'
+75 silly reify ]
+76 silly reify mark retired [
+76 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-core'
+76 silly reify ]
+77 silly reify mark retired [
+77 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\typescript'
+77 silly reify ]
+78 silly reify mark retired [
+78 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-sfc'
+78 silly reify ]
+79 silly reify mark retired [
+79 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-dom'
+79 silly reify ]
+80 silly reify mark retired [
+80 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-ssr'
+80 silly reify ]
+81 silly reify mark retired [
+81 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\devtools-api'
+81 silly reify ]
+82 silly reify mark retired [
+82 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-vue2'
+82 silly reify ]
+83 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\reactivity' ]
+84 silly reify mark retired [
+84 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\language-core'
+84 silly reify ]
+85 silly reify mark retired [
+85 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\runtime-core'
+85 silly reify ]
+86 silly reify mark retired [
+86 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\runtime-dom'
+86 silly reify ]
+87 silly reify mark retired [
+87 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\server-renderer'
+87 silly reify ]
+88 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\core' ]
+89 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\shared' ]
+90 silly reify mark retired [
+90 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\metadata'
+90 silly reify ]
+91 silly reify mark retired [ 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\shared' ]
+92 silly reify mark retired [
+92 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\anymatch\\node_modules\\picomatch'
+92 silly reify ]
+93 silly reify mark retired [
+93 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\micromatch\\node_modules\\picomatch'
+93 silly reify ]
+94 silly reify mark retired [
+94 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\readdirp\\node_modules\\picomatch'
+94 silly reify ]
+95 silly reify moves {
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\alien-signals': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.alien-signals-gYa8eY6z',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\agent-base': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.agent-base-dKYBgFzl',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\async-validator': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.async-validator-e5RDJXn0',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\axios': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.axios-kyIIUwbN',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\bundle-require': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.bundle-require-5KGL8tly',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\brace-expansion': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.brace-expansion-LF2NPOTc',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\connect': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.connect-PF11bj5I',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\de-indent': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.de-indent-NpM2N06a',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\dayjs': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.dayjs-OfGvUcRA',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\encodeurl': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.encodeurl-VNYAO7nq',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\element-plus': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.element-plus-lU2i4XET',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\es-object-atoms': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.es-object-atoms-QcC4ShCx',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\estree-walker': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.estree-walker-xtCjKSfC',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\esbuild': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.esbuild-rZ4QxlzX',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\finalhandler': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.finalhandler-K2UKYVeH',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\follow-redirects': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.follow-redirects-fqumHjJP',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\hasown': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.hasown-kuJ9r8PW',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\highlight.js': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.highlight.js-YZjhkstw',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\he': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.he-ChrGcGm0',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\https-proxy-agent': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.https-proxy-agent-TWorOSCn',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\load-tsconfig': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.load-tsconfig-5oVMdAkp',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.lodash-KjQmvLSA',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash-es': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.lodash-es-K9pat52h',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\lodash-unified': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.lodash-unified-H0JeYsIO',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\memoize-one': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.memoize-one-QHrnwJS1',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\minimatch': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.minimatch-3e4zpe4D',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\mockjs': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.mockjs-bcyHuab1',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\muggle-string': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.muggle-string-v043AO78',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\nanoid': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.nanoid-g3qSvjsK',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\normalize-wheel-es': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.normalize-wheel-es-R6YFuci3',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\on-finished': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.on-finished-LXgdbpPi',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\pinia': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.pinia-4YqNFKN0',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\postcss': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.postcss-G8azRFg9',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\picomatch': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.picomatch-SUPnUJFC',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\proxy-from-env': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.proxy-from-env-m4WCRTje',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\rollup': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.rollup-i32kiC3a',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\statuses': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.statuses-BxfPNREm',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\tinyglobby': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.tinyglobby-juXvW2Bx',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\typescript': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.typescript-MH06GZQe',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\utils-merge': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.utils-merge-DLybf732',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vite-plugin-mock': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vite-plugin-mock-yiNN0aqd',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vite': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vite-TYUQk7jc',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vscode-uri': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vscode-uri-BSm2Mz4k',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vue-MrXJIGuE',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-component-type-helpers': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vue-component-type-helpers-IkwuGif4',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-demi': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vue-demi-kcJaIFwV',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-router': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vue-router-9gKcds0o',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\vue-tsc': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\.vue-tsc-4j0yqMxj',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@babel\\parser': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@babel\\.parser-lz5o7kWR',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@esbuild\\win32-x64': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@esbuild\\.win32-x64-zfFxud7C',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@ctrl\\tinycolor': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@ctrl\\.tinycolor-mteHAT3f',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@element-plus\\icons-vue': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@element-plus\\.icons-vue-5EtCST9M',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@popperjs\\core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@popperjs\\.core-9aChk2TI',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\rollup-win32-x64-gnu': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\.rollup-win32-x64-gnu-2LKV8EgM',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\rollup-win32-x64-msvc': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@rollup\\.rollup-win32-x64-msvc-OIx3rFRQ',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\lodash-es': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\.lodash-es-jIl80zUg',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vitejs\\plugin-vue': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vitejs\\.plugin-vue-0gF9lQDl',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\lodash': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\.lodash-AoI4TVVM',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\web-bluetooth': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@types\\.web-bluetooth-9EphdPqZ',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\language-core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\.language-core-Jb8dHQrG',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\source-map': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\.source-map-43ayxeGp',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.compiler-core-ZmrVAVwx',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\typescript': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@volar\\.typescript-NBZpF7Tl',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-sfc': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.compiler-sfc-0iYXFt7O',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-dom': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.compiler-dom-SaCVKX8w',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-ssr': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.compiler-ssr-Qcy6Uy6c',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\devtools-api': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.devtools-api-sHsWnP63',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\compiler-vue2': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.compiler-vue2-G4bz4eEv',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\reactivity': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.reactivity-yfEII1eN',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\language-core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.language-core-68F02gZK',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\runtime-core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.runtime-core-UsuObyRn',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\runtime-dom': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.runtime-dom-7EJJsgvb',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\server-renderer': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.server-renderer-7qoYwSVn',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\core': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\.core-S0Fd3Mqs',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\shared': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vue\\.shared-ux3b9HBJ',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\metadata': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\.metadata-WugPjvKB',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\shared': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\@vueuse\\.shared-eKLA8vZH',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\anymatch\\node_modules\\picomatch': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\anymatch\\node_modules\\.picomatch-4KRTt85m',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\micromatch\\node_modules\\picomatch': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\micromatch\\node_modules\\.picomatch-jO02xCG6',
+95 silly reify   'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\readdirp\\node_modules\\picomatch': 'D:\\CodingProjects\\Lipengfei\\B1\\node_modules\\readdirp\\node_modules\\.picomatch-PHt1i6s2'
+95 silly reify }
+96 http cache @vue/shared@https://registry.npmmirror.com/@vue/shared/-/shared-3.5.34.tgz 0ms (cache hit)
+97 http cache @vueuse/shared@https://registry.npmmirror.com/@vueuse/shared/-/shared-14.3.0.tgz 0ms (cache hit)
+98 http cache @vueuse/metadata@https://registry.npmmirror.com/@vueuse/metadata/-/metadata-14.3.0.tgz 0ms (cache hit)
+99 http cache @vue/runtime-core@https://registry.npmmirror.com/@vue/runtime-core/-/runtime-core-3.5.34.tgz 0ms (cache hit)
+100 http cache @vueuse/core@https://registry.npmmirror.com/@vueuse/core/-/core-14.3.0.tgz 0ms (cache hit)
+101 http cache @vue/server-renderer@https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.5.34.tgz 0ms (cache hit)
+102 http cache @vue/runtime-dom@https://registry.npmmirror.com/@vue/runtime-dom/-/runtime-dom-3.5.34.tgz 0ms (cache hit)
+103 http cache @vue/language-core@https://registry.npmmirror.com/@vue/language-core/-/language-core-2.2.12.tgz 0ms (cache hit)
+104 http cache @vue/reactivity@https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.5.34.tgz 0ms (cache hit)
+105 http cache @vue/compiler-vue2@https://registry.npmmirror.com/@vue/compiler-vue2/-/compiler-vue2-2.7.16.tgz 0ms (cache hit)
+106 http cache @vue/devtools-api@https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz 0ms (cache hit)
+107 http cache @vue/compiler-dom@https://registry.npmmirror.com/@vue/compiler-dom/-/compiler-dom-3.5.34.tgz 0ms (cache hit)
+108 http cache @vue/compiler-ssr@https://registry.npmmirror.com/@vue/compiler-ssr/-/compiler-ssr-3.5.34.tgz 0ms (cache hit)
+109 http cache @volar/source-map@https://registry.npmmirror.com/@volar/source-map/-/source-map-2.4.15.tgz 0ms (cache hit)
+110 http cache @vue/compiler-sfc@https://registry.npmmirror.com/@vue/compiler-sfc/-/compiler-sfc-3.5.34.tgz 0ms (cache hit)
+111 http cache @volar/language-core@https://registry.npmmirror.com/@volar/language-core/-/language-core-2.4.15.tgz 0ms (cache hit)
+112 http cache @vue/compiler-core@https://registry.npmmirror.com/@vue/compiler-core/-/compiler-core-3.5.34.tgz 0ms (cache hit)
+113 http cache @volar/typescript@https://registry.npmmirror.com/@volar/typescript/-/typescript-2.4.15.tgz 0ms (cache hit)
+114 http cache @vitejs/plugin-vue@https://registry.npmmirror.com/@vitejs/plugin-vue/-/plugin-vue-5.2.4.tgz 0ms (cache hit)
+115 http cache @popperjs/core@https://registry.npmmirror.com/@sxzz/popperjs-es/-/popperjs-es-2.11.8.tgz 0ms (cache hit)
+116 http cache @types/web-bluetooth@https://registry.npmmirror.com/@types/web-bluetooth/-/web-bluetooth-0.0.21.tgz 0ms (cache hit)
+117 http cache @types/lodash-es@https://registry.npmmirror.com/@types/lodash-es/-/lodash-es-4.17.12.tgz 0ms (cache hit)
+118 http cache @types/lodash@https://registry.npmmirror.com/@types/lodash/-/lodash-4.17.24.tgz 0ms (cache hit)
+119 http cache @rollup/rollup-win32-x64-msvc@https://registry.npmmirror.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.60.4.tgz 0ms (cache hit)
+120 http cache @esbuild/win32-x64@https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.28.0.tgz 0ms (cache hit)
+121 http cache @rollup/rollup-win32-x64-gnu@https://registry.npmmirror.com/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.60.4.tgz 0ms (cache hit)
+122 http cache @ctrl/tinycolor@https://registry.npmmirror.com/@ctrl/tinycolor/-/tinycolor-4.2.0.tgz 0ms (cache hit)
+123 http cache @element-plus/icons-vue@https://registry.npmmirror.com/@element-plus/icons-vue/-/icons-vue-2.3.2.tgz 0ms (cache hit)
+124 http cache @babel/parser@https://registry.npmmirror.com/@babel/parser/-/parser-7.29.3.tgz 0ms (cache hit)
+125 http cache vue-router@https://registry.npmmirror.com/vue-router/-/vue-router-4.6.4.tgz 0ms (cache hit)
+126 http cache vue-tsc@https://registry.npmmirror.com/vue-tsc/-/vue-tsc-2.2.12.tgz 0ms (cache hit)
+127 http cache vue-component-type-helpers@https://registry.npmmirror.com/vue-component-type-helpers/-/vue-component-type-helpers-3.3.1.tgz 0ms (cache hit)
+128 http cache vue-demi@https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.10.tgz 0ms (cache hit)
+129 http cache vscode-uri@https://registry.npmmirror.com/vscode-uri/-/vscode-uri-3.1.0.tgz 0ms (cache hit)
+130 http cache vue@https://registry.npmmirror.com/vue/-/vue-3.5.34.tgz 0ms (cache hit)
+131 http cache vite-plugin-mock@https://registry.npmmirror.com/vite-plugin-mock/-/vite-plugin-mock-3.0.2.tgz 0ms (cache hit)
+132 http cache typescript@https://registry.npmmirror.com/typescript/-/typescript-5.6.3.tgz 0ms (cache hit)
+133 http cache vite@https://registry.npmmirror.com/vite/-/vite-6.4.2.tgz 0ms (cache hit)
+134 http cache utils-merge@https://registry.npmmirror.com/utils-merge/-/utils-merge-1.0.1.tgz 0ms (cache hit)
+135 http cache statuses@https://registry.npmmirror.com/statuses/-/statuses-1.5.0.tgz 0ms (cache hit)
+136 http cache rollup@https://registry.npmmirror.com/rollup/-/rollup-4.60.4.tgz 0ms (cache hit)
+137 http cache tinyglobby@https://registry.npmmirror.com/tinyglobby/-/tinyglobby-0.2.16.tgz 0ms (cache hit)
+138 http cache postcss@https://registry.npmmirror.com/postcss/-/postcss-8.5.15.tgz 0ms (cache hit)
+139 http cache pinia@https://registry.npmmirror.com/pinia/-/pinia-2.3.1.tgz 0ms (cache hit)
+140 http cache proxy-from-env@https://registry.npmmirror.com/proxy-from-env/-/proxy-from-env-2.1.0.tgz 0ms (cache hit)
+141 http cache picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-4.0.4.tgz 0ms (cache hit)
+142 http cache on-finished@https://registry.npmmirror.com/on-finished/-/on-finished-2.3.0.tgz 0ms (cache hit)
+143 http cache nanoid@https://registry.npmmirror.com/nanoid/-/nanoid-3.3.12.tgz 0ms (cache hit)
+144 http cache muggle-string@https://registry.npmmirror.com/muggle-string/-/muggle-string-0.4.1.tgz 0ms (cache hit)
+145 http cache normalize-wheel-es@https://registry.npmmirror.com/normalize-wheel-es/-/normalize-wheel-es-1.2.0.tgz 0ms (cache hit)
+146 http cache mockjs@https://registry.npmmirror.com/mockjs/-/mockjs-1.1.0.tgz 0ms (cache hit)
+147 http cache minimatch@https://registry.npmmirror.com/minimatch/-/minimatch-9.0.9.tgz 0ms (cache hit)
+148 http cache lodash-unified@https://registry.npmmirror.com/lodash-unified/-/lodash-unified-1.0.3.tgz 0ms (cache hit)
+149 http cache memoize-one@https://registry.npmmirror.com/memoize-one/-/memoize-one-6.0.0.tgz 0ms (cache hit)
+150 http cache lodash-es@https://registry.npmmirror.com/lodash-es/-/lodash-es-4.18.1.tgz 0ms (cache hit)
+151 http cache load-tsconfig@https://registry.npmmirror.com/load-tsconfig/-/load-tsconfig-0.2.5.tgz 0ms (cache hit)
+152 http cache lodash@https://registry.npmmirror.com/lodash/-/lodash-4.18.1.tgz 0ms (cache hit)
+153 http cache highlight.js@https://registry.npmmirror.com/highlight.js/-/highlight.js-11.11.1.tgz 0ms (cache hit)
+154 http cache https-proxy-agent@https://registry.npmmirror.com/https-proxy-agent/-/https-proxy-agent-5.0.1.tgz 0ms (cache hit)
+155 http cache he@https://registry.npmmirror.com/he/-/he-1.2.0.tgz 0ms (cache hit)
+156 http cache hasown@https://registry.npmmirror.com/hasown/-/hasown-2.0.3.tgz 0ms (cache hit)
+157 http cache follow-redirects@https://registry.npmmirror.com/follow-redirects/-/follow-redirects-1.16.0.tgz 0ms (cache hit)
+158 http cache finalhandler@https://registry.npmmirror.com/finalhandler/-/finalhandler-1.1.2.tgz 0ms (cache hit)
+159 http cache esbuild@https://registry.npmmirror.com/esbuild/-/esbuild-0.28.0.tgz 0ms (cache hit)
+160 http cache estree-walker@https://registry.npmmirror.com/estree-walker/-/estree-walker-2.0.2.tgz 0ms (cache hit)
+161 http cache es-object-atoms@https://registry.npmmirror.com/es-object-atoms/-/es-object-atoms-1.1.2.tgz 0ms (cache hit)
+162 http cache element-plus@https://registry.npmmirror.com/element-plus/-/element-plus-2.14.0.tgz 0ms (cache hit)
+163 http cache encodeurl@https://registry.npmmirror.com/encodeurl/-/encodeurl-1.0.2.tgz 0ms (cache hit)
+164 http cache dayjs@https://registry.npmmirror.com/dayjs/-/dayjs-1.11.20.tgz 0ms (cache hit)
+165 http cache de-indent@https://registry.npmmirror.com/de-indent/-/de-indent-1.0.2.tgz 0ms (cache hit)
+166 http cache brace-expansion@https://registry.npmmirror.com/brace-expansion/-/brace-expansion-2.1.1.tgz 0ms (cache hit)
+167 http cache bundle-require@https://registry.npmmirror.com/bundle-require/-/bundle-require-4.2.1.tgz 0ms (cache hit)
+168 http cache connect@https://registry.npmmirror.com/connect/-/connect-3.7.0.tgz 0ms (cache hit)
+169 http cache axios@https://registry.npmmirror.com/axios/-/axios-1.16.1.tgz 0ms (cache hit)
+170 http cache async-validator@https://registry.npmmirror.com/async-validator/-/async-validator-4.2.5.tgz 0ms (cache hit)
+171 http cache picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz 0ms (cache hit)
+172 http cache picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz 0ms (cache hit)
+173 http cache alien-signals@https://registry.npmmirror.com/alien-signals/-/alien-signals-1.0.13.tgz 0ms (cache hit)
+174 http cache agent-base@https://registry.npmmirror.com/agent-base/-/agent-base-6.0.2.tgz 0ms (cache hit)
+175 http cache picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz 0ms (cache hit)
+176 http cache ms@https://registry.npmmirror.com/ms/-/ms-2.0.0.tgz 0ms (cache hit)
+177 http cache @esbuild/win32-x64@https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz 0ms (cache hit)
+178 http cache esbuild@https://registry.npmmirror.com/esbuild/-/esbuild-0.25.12.tgz 0ms (cache hit)
+179 silly tarball no local data for @vue/shared@https://registry.npmmirror.com/@vue/shared/-/shared-3.5.34.tgz. Extracting by manifest.
+180 http cache debug@https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz 0ms (cache hit)
+181 silly tarball no local data for @vueuse/shared@https://registry.npmmirror.com/@vueuse/shared/-/shared-14.3.0.tgz. Extracting by manifest.
+182 http cache ms@https://registry.npmmirror.com/ms/-/ms-2.0.0.tgz 0ms (cache hit)
+183 http cache debug@https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz 0ms (cache hit)
+184 silly tarball no local data for @vueuse/metadata@https://registry.npmmirror.com/@vueuse/metadata/-/metadata-14.3.0.tgz. Extracting by manifest.
+185 silly tarball no local data for @vue/runtime-core@https://registry.npmmirror.com/@vue/runtime-core/-/runtime-core-3.5.34.tgz. Extracting by manifest.
+186 silly tarball no local data for @vueuse/core@https://registry.npmmirror.com/@vueuse/core/-/core-14.3.0.tgz. Extracting by manifest.
+187 silly tarball no local data for @vue/server-renderer@https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.5.34.tgz. Extracting by manifest.
+188 silly tarball no local data for @vue/runtime-dom@https://registry.npmmirror.com/@vue/runtime-dom/-/runtime-dom-3.5.34.tgz. Extracting by manifest.
+189 silly tarball no local data for @vue/language-core@https://registry.npmmirror.com/@vue/language-core/-/language-core-2.2.12.tgz. Extracting by manifest.
+190 silly tarball no local data for @vue/reactivity@https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.5.34.tgz. Extracting by manifest.
+191 silly tarball no local data for @vue/compiler-vue2@https://registry.npmmirror.com/@vue/compiler-vue2/-/compiler-vue2-2.7.16.tgz. Extracting by manifest.
+192 silly tarball no local data for @vue/devtools-api@https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz. Extracting by manifest.
+193 silly tarball no local data for @vue/compiler-dom@https://registry.npmmirror.com/@vue/compiler-dom/-/compiler-dom-3.5.34.tgz. Extracting by manifest.
+194 silly tarball no local data for @vue/compiler-ssr@https://registry.npmmirror.com/@vue/compiler-ssr/-/compiler-ssr-3.5.34.tgz. Extracting by manifest.
+195 silly tarball no local data for @volar/source-map@https://registry.npmmirror.com/@volar/source-map/-/source-map-2.4.15.tgz. Extracting by manifest.
+196 silly tarball no local data for @vue/compiler-sfc@https://registry.npmmirror.com/@vue/compiler-sfc/-/compiler-sfc-3.5.34.tgz. Extracting by manifest.
+197 silly tarball no local data for @volar/language-core@https://registry.npmmirror.com/@volar/language-core/-/language-core-2.4.15.tgz. Extracting by manifest.
+198 silly tarball no local data for @vue/compiler-core@https://registry.npmmirror.com/@vue/compiler-core/-/compiler-core-3.5.34.tgz. Extracting by manifest.
+199 silly tarball no local data for @volar/typescript@https://registry.npmmirror.com/@volar/typescript/-/typescript-2.4.15.tgz. Extracting by manifest.
+200 silly tarball no local data for @vitejs/plugin-vue@https://registry.npmmirror.com/@vitejs/plugin-vue/-/plugin-vue-5.2.4.tgz. Extracting by manifest.
+201 silly tarball no local data for @popperjs/core@https://registry.npmmirror.com/@sxzz/popperjs-es/-/popperjs-es-2.11.8.tgz. Extracting by manifest.
+202 silly tarball no local data for @types/web-bluetooth@https://registry.npmmirror.com/@types/web-bluetooth/-/web-bluetooth-0.0.21.tgz. Extracting by manifest.
+203 silly tarball no local data for @types/lodash-es@https://registry.npmmirror.com/@types/lodash-es/-/lodash-es-4.17.12.tgz. Extracting by manifest.
+204 silly tarball no local data for @types/lodash@https://registry.npmmirror.com/@types/lodash/-/lodash-4.17.24.tgz. Extracting by manifest.
+205 silly tarball no local data for @rollup/rollup-win32-x64-msvc@https://registry.npmmirror.com/@rollup/rollup-win32-x64-msvc/-/rollup-win32-x64-msvc-4.60.4.tgz. Extracting by manifest.
+206 silly tarball no local data for @esbuild/win32-x64@https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.28.0.tgz. Extracting by manifest.
+207 silly tarball no local data for @rollup/rollup-win32-x64-gnu@https://registry.npmmirror.com/@rollup/rollup-win32-x64-gnu/-/rollup-win32-x64-gnu-4.60.4.tgz. Extracting by manifest.
+208 silly tarball no local data for @ctrl/tinycolor@https://registry.npmmirror.com/@ctrl/tinycolor/-/tinycolor-4.2.0.tgz. Extracting by manifest.
+209 silly tarball no local data for @element-plus/icons-vue@https://registry.npmmirror.com/@element-plus/icons-vue/-/icons-vue-2.3.2.tgz. Extracting by manifest.
+210 silly tarball no local data for @babel/parser@https://registry.npmmirror.com/@babel/parser/-/parser-7.29.3.tgz. Extracting by manifest.
+211 silly tarball no local data for vue-router@https://registry.npmmirror.com/vue-router/-/vue-router-4.6.4.tgz. Extracting by manifest.
+212 silly tarball no local data for vue-tsc@https://registry.npmmirror.com/vue-tsc/-/vue-tsc-2.2.12.tgz. Extracting by manifest.
+213 silly tarball no local data for vue-component-type-helpers@https://registry.npmmirror.com/vue-component-type-helpers/-/vue-component-type-helpers-3.3.1.tgz. Extracting by manifest.
+214 silly tarball no local data for vue-demi@https://registry.npmmirror.com/vue-demi/-/vue-demi-0.14.10.tgz. Extracting by manifest.
+215 silly tarball no local data for vscode-uri@https://registry.npmmirror.com/vscode-uri/-/vscode-uri-3.1.0.tgz. Extracting by manifest.
+216 silly tarball no local data for vue@https://registry.npmmirror.com/vue/-/vue-3.5.34.tgz. Extracting by manifest.
+217 silly tarball no local data for vite-plugin-mock@https://registry.npmmirror.com/vite-plugin-mock/-/vite-plugin-mock-3.0.2.tgz. Extracting by manifest.
+218 silly tarball no local data for typescript@https://registry.npmmirror.com/typescript/-/typescript-5.6.3.tgz. Extracting by manifest.
+219 silly tarball no local data for vite@https://registry.npmmirror.com/vite/-/vite-6.4.2.tgz. Extracting by manifest.
+220 silly tarball no local data for utils-merge@https://registry.npmmirror.com/utils-merge/-/utils-merge-1.0.1.tgz. Extracting by manifest.
+221 silly tarball no local data for statuses@https://registry.npmmirror.com/statuses/-/statuses-1.5.0.tgz. Extracting by manifest.
+222 silly tarball no local data for rollup@https://registry.npmmirror.com/rollup/-/rollup-4.60.4.tgz. Extracting by manifest.
+223 silly tarball no local data for tinyglobby@https://registry.npmmirror.com/tinyglobby/-/tinyglobby-0.2.16.tgz. Extracting by manifest.
+224 silly tarball no local data for postcss@https://registry.npmmirror.com/postcss/-/postcss-8.5.15.tgz. Extracting by manifest.
+225 silly tarball no local data for pinia@https://registry.npmmirror.com/pinia/-/pinia-2.3.1.tgz. Extracting by manifest.
+226 silly tarball no local data for proxy-from-env@https://registry.npmmirror.com/proxy-from-env/-/proxy-from-env-2.1.0.tgz. Extracting by manifest.
+227 silly tarball no local data for picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-4.0.4.tgz. Extracting by manifest.
+228 silly tarball no local data for on-finished@https://registry.npmmirror.com/on-finished/-/on-finished-2.3.0.tgz. Extracting by manifest.
+229 silly tarball no local data for nanoid@https://registry.npmmirror.com/nanoid/-/nanoid-3.3.12.tgz. Extracting by manifest.
+230 silly tarball no local data for muggle-string@https://registry.npmmirror.com/muggle-string/-/muggle-string-0.4.1.tgz. Extracting by manifest.
+231 silly tarball no local data for normalize-wheel-es@https://registry.npmmirror.com/normalize-wheel-es/-/normalize-wheel-es-1.2.0.tgz. Extracting by manifest.
+232 silly tarball no local data for mockjs@https://registry.npmmirror.com/mockjs/-/mockjs-1.1.0.tgz. Extracting by manifest.
+233 silly tarball no local data for minimatch@https://registry.npmmirror.com/minimatch/-/minimatch-9.0.9.tgz. Extracting by manifest.
+234 silly tarball no local data for lodash-unified@https://registry.npmmirror.com/lodash-unified/-/lodash-unified-1.0.3.tgz. Extracting by manifest.
+235 silly tarball no local data for memoize-one@https://registry.npmmirror.com/memoize-one/-/memoize-one-6.0.0.tgz. Extracting by manifest.
+236 silly tarball no local data for lodash-es@https://registry.npmmirror.com/lodash-es/-/lodash-es-4.18.1.tgz. Extracting by manifest.
+237 silly tarball no local data for load-tsconfig@https://registry.npmmirror.com/load-tsconfig/-/load-tsconfig-0.2.5.tgz. Extracting by manifest.
+238 silly tarball no local data for lodash@https://registry.npmmirror.com/lodash/-/lodash-4.18.1.tgz. Extracting by manifest.
+239 silly tarball no local data for highlight.js@https://registry.npmmirror.com/highlight.js/-/highlight.js-11.11.1.tgz. Extracting by manifest.
+240 silly tarball no local data for https-proxy-agent@https://registry.npmmirror.com/https-proxy-agent/-/https-proxy-agent-5.0.1.tgz. Extracting by manifest.
+241 silly tarball no local data for he@https://registry.npmmirror.com/he/-/he-1.2.0.tgz. Extracting by manifest.
+242 silly tarball no local data for hasown@https://registry.npmmirror.com/hasown/-/hasown-2.0.3.tgz. Extracting by manifest.
+243 silly tarball no local data for follow-redirects@https://registry.npmmirror.com/follow-redirects/-/follow-redirects-1.16.0.tgz. Extracting by manifest.
+244 silly tarball no local data for finalhandler@https://registry.npmmirror.com/finalhandler/-/finalhandler-1.1.2.tgz. Extracting by manifest.
+245 silly tarball no local data for esbuild@https://registry.npmmirror.com/esbuild/-/esbuild-0.28.0.tgz. Extracting by manifest.
+246 silly tarball no local data for estree-walker@https://registry.npmmirror.com/estree-walker/-/estree-walker-2.0.2.tgz. Extracting by manifest.
+247 silly tarball no local data for es-object-atoms@https://registry.npmmirror.com/es-object-atoms/-/es-object-atoms-1.1.2.tgz. Extracting by manifest.
+248 silly tarball no local data for element-plus@https://registry.npmmirror.com/element-plus/-/element-plus-2.14.0.tgz. Extracting by manifest.
+249 silly tarball no local data for encodeurl@https://registry.npmmirror.com/encodeurl/-/encodeurl-1.0.2.tgz. Extracting by manifest.
+250 silly tarball no local data for dayjs@https://registry.npmmirror.com/dayjs/-/dayjs-1.11.20.tgz. Extracting by manifest.
+251 silly tarball no local data for de-indent@https://registry.npmmirror.com/de-indent/-/de-indent-1.0.2.tgz. Extracting by manifest.
+252 silly tarball no local data for brace-expansion@https://registry.npmmirror.com/brace-expansion/-/brace-expansion-2.1.1.tgz. Extracting by manifest.
+253 silly tarball no local data for bundle-require@https://registry.npmmirror.com/bundle-require/-/bundle-require-4.2.1.tgz. Extracting by manifest.
+254 silly tarball no local data for connect@https://registry.npmmirror.com/connect/-/connect-3.7.0.tgz. Extracting by manifest.
+255 silly tarball no local data for axios@https://registry.npmmirror.com/axios/-/axios-1.16.1.tgz. Extracting by manifest.
+256 silly tarball no local data for async-validator@https://registry.npmmirror.com/async-validator/-/async-validator-4.2.5.tgz. Extracting by manifest.
+257 silly tarball no local data for picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz. Extracting by manifest.
+258 silly tarball no local data for picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz. Extracting by manifest.
+259 silly tarball no local data for alien-signals@https://registry.npmmirror.com/alien-signals/-/alien-signals-1.0.13.tgz. Extracting by manifest.
+260 silly tarball no local data for agent-base@https://registry.npmmirror.com/agent-base/-/agent-base-6.0.2.tgz. Extracting by manifest.
+261 silly tarball no local data for picomatch@https://registry.npmmirror.com/picomatch/-/picomatch-2.3.2.tgz. Extracting by manifest.
+262 silly tarball no local data for ms@https://registry.npmmirror.com/ms/-/ms-2.0.0.tgz. Extracting by manifest.
+263 silly tarball no local data for @esbuild/win32-x64@https://registry.npmmirror.com/@esbuild/win32-x64/-/win32-x64-0.25.12.tgz. Extracting by manifest.
+264 silly tarball no local data for esbuild@https://registry.npmmirror.com/esbuild/-/esbuild-0.25.12.tgz. Extracting by manifest.
+265 silly tarball no local data for debug@https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz. Extracting by manifest.
+266 silly tarball no local data for ms@https://registry.npmmirror.com/ms/-/ms-2.0.0.tgz. Extracting by manifest.
+267 silly tarball no local data for debug@https://registry.npmmirror.com/debug/-/debug-2.6.9.tgz. Extracting by manifest.
+268 http fetch GET https://registry.npmmirror.com/@vueuse/shared/-/shared-14.3.0.tgz attempt 1 failed with EACCES
+269 http fetch GET https://registry.npmmirror.com/@vue/shared/-/shared-3.5.34.tgz attempt 1 failed with EACCES
+270 http fetch GET https://registry.npmmirror.com/@vue/runtime-core/-/runtime-core-3.5.34.tgz attempt 1 failed with EACCES
+271 http fetch GET https://registry.npmmirror.com/@vueuse/metadata/-/metadata-14.3.0.tgz attempt 1 failed with EACCES
+272 http fetch GET https://registry.npmmirror.com/@vueuse/core/-/core-14.3.0.tgz attempt 1 failed with EACCES
+273 http fetch GET https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.5.34.tgz attempt 1 failed with EACCES
+274 http fetch GET https://registry.npmmirror.com/@vue/runtime-dom/-/runtime-dom-3.5.34.tgz attempt 1 failed with EACCES
+275 http fetch GET https://registry.npmmirror.com/@vue/language-core/-/language-core-2.2.12.tgz attempt 1 failed with EACCES
+276 http fetch GET https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.5.34.tgz attempt 1 failed with EACCES
+277 http fetch GET https://registry.npmmirror.com/@vue/compiler-vue2/-/compiler-vue2-2.7.16.tgz attempt 1 failed with EACCES
+278 http fetch GET https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz attempt 1 failed with EACCES
+279 http fetch GET https://registry.npmmirror.com/@vue/compiler-dom/-/compiler-dom-3.5.34.tgz attempt 1 failed with EACCES
+280 http fetch GET https://registry.npmmirror.com/@vue/compiler-ssr/-/compiler-ssr-3.5.34.tgz attempt 1 failed with EACCES
+281 http fetch GET https://registry.npmmirror.com/@vue/compiler-sfc/-/compiler-sfc-3.5.34.tgz attempt 1 failed with EACCES
+282 http fetch GET https://registry.npmmirror.com/@volar/source-map/-/source-map-2.4.15.tgz attempt 1 failed with EACCES
+283 http fetch GET https://registry.npmjs.org/npm attempt 2 failed with EACCES
+284 http fetch GET https://registry.npmmirror.com/@vueuse/shared/-/shared-14.3.0.tgz attempt 2 failed with EACCES
+285 http fetch GET https://registry.npmmirror.com/@vue/shared/-/shared-3.5.34.tgz attempt 2 failed with EACCES
+286 http fetch GET https://registry.npmmirror.com/@vue/runtime-core/-/runtime-core-3.5.34.tgz attempt 2 failed with EACCES
+287 http fetch GET https://registry.npmmirror.com/@vueuse/metadata/-/metadata-14.3.0.tgz attempt 2 failed with EACCES
+288 http fetch GET https://registry.npmmirror.com/@vueuse/core/-/core-14.3.0.tgz attempt 2 failed with EACCES
+289 http fetch GET https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.5.34.tgz attempt 2 failed with EACCES
+290 http fetch GET https://registry.npmmirror.com/@vue/runtime-dom/-/runtime-dom-3.5.34.tgz attempt 2 failed with EACCES
+291 http fetch GET https://registry.npmmirror.com/@vue/language-core/-/language-core-2.2.12.tgz attempt 2 failed with EACCES
+292 http fetch GET https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.5.34.tgz attempt 2 failed with EACCES
+293 http fetch GET https://registry.npmmirror.com/@vue/compiler-vue2/-/compiler-vue2-2.7.16.tgz attempt 2 failed with EACCES
+294 http fetch GET https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz attempt 2 failed with EACCES
+295 http fetch GET https://registry.npmmirror.com/@vue/compiler-dom/-/compiler-dom-3.5.34.tgz attempt 2 failed with EACCES
+296 http fetch GET https://registry.npmmirror.com/@vue/compiler-ssr/-/compiler-ssr-3.5.34.tgz attempt 2 failed with EACCES
+297 http fetch GET https://registry.npmmirror.com/@vue/compiler-sfc/-/compiler-sfc-3.5.34.tgz attempt 2 failed with EACCES
+298 http fetch GET https://registry.npmmirror.com/@volar/source-map/-/source-map-2.4.15.tgz attempt 2 failed with EACCES
+299 http fetch GET https://registry.npmjs.org/npm attempt 3 failed with EACCES
+300 http fetch GET https://registry.npmmirror.com/@vueuse/shared/-/shared-14.3.0.tgz attempt 3 failed with EACCES
+301 http fetch GET https://registry.npmmirror.com/@vue/shared/-/shared-3.5.34.tgz attempt 3 failed with EACCES
+302 http fetch GET https://registry.npmmirror.com/@vue/runtime-core/-/runtime-core-3.5.34.tgz attempt 3 failed with EACCES
+303 http fetch GET https://registry.npmmirror.com/@vueuse/metadata/-/metadata-14.3.0.tgz attempt 3 failed with EACCES
+304 http fetch GET https://registry.npmmirror.com/@vueuse/core/-/core-14.3.0.tgz attempt 3 failed with EACCES
+305 http fetch GET https://registry.npmmirror.com/@vue/server-renderer/-/server-renderer-3.5.34.tgz attempt 3 failed with EACCES
+306 http fetch GET https://registry.npmmirror.com/@vue/runtime-dom/-/runtime-dom-3.5.34.tgz attempt 3 failed with EACCES
+307 http fetch GET https://registry.npmmirror.com/@vue/language-core/-/language-core-2.2.12.tgz attempt 3 failed with EACCES
+308 http fetch GET https://registry.npmmirror.com/@vue/reactivity/-/reactivity-3.5.34.tgz attempt 3 failed with EACCES
+309 http fetch GET https://registry.npmmirror.com/@vue/compiler-vue2/-/compiler-vue2-2.7.16.tgz attempt 3 failed with EACCES
+310 http fetch GET https://registry.npmmirror.com/@vue/devtools-api/-/devtools-api-6.6.4.tgz attempt 3 failed with EACCES
+311 http fetch GET https://registry.npmmirror.com/@vue/compiler-dom/-/compiler-dom-3.5.34.tgz attempt 3 failed with EACCES
+312 http fetch GET https://registry.npmmirror.com/@vue/compiler-ssr/-/compiler-ssr-3.5.34.tgz attempt 3 failed with EACCES
+313 http fetch GET https://registry.npmmirror.com/@vue/compiler-sfc/-/compiler-sfc-3.5.34.tgz attempt 3 failed with EACCES
+314 http fetch GET https://registry.npmmirror.com/@volar/source-map/-/source-map-2.4.15.tgz attempt 3 failed with EACCES
+315 verbose cwd D:\CodingProjects\Lipengfei\B1
+316 verbose os Windows_NT 10.0.26200
+317 verbose node v24.13.0
+318 verbose npm  v11.6.2
+319 error Exit handler never called!
+320 error This is an error with npm itself. Please report this error at:
+321 error   <https://github.com/npm/cli/issues>
+322 verbose exit 1
+323 verbose code 1
+324 error A complete log of this run can be found in: D:\CodingProjects\Lipengfei\B1\.npm-cache\_logs\2026-05-30T12_51_09_205Z-debug-0.log

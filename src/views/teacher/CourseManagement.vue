@@ -2,13 +2,17 @@
   <div class="course-management-container">
     <div class="page-header">
       <div class="header-left">
-        <h1>课程与班级管理</h1>
-        <p class="header-desc">管理您的课程和班级信息</p>
+        <h1>{{ pageTitle }}</h1>
+        <p class="header-desc">{{ pageDescription }}</p>
       </div>
       <div class="header-right">
-        <el-button type="primary" @click="showCreateCourseDialog">
+        <el-button v-if="!isClassPage" type="primary" @click="showCreateCourseDialog">
           <el-icon><Plus /></el-icon>
           新建课程
+        </el-button>
+        <el-button v-else type="primary" @click="showCreateClassDialog" :disabled="!selectedCourseId">
+          <el-icon><Plus /></el-icon>
+          新建班级
         </el-button>
         <el-button
           icon="ArrowRight"
@@ -20,9 +24,7 @@
       </div>
     </div>
     
-    <el-tabs v-model="activeTab" class="management-tabs">
-      <el-tab-pane label="我的课程" name="courses">
-        <div class="courses-section">
+    <div v-if="!isClassPage" class="management-section courses-section">
           <div class="section-header">
             <el-input
               v-model="courseSearch"
@@ -104,11 +106,9 @@
               </div>
             </el-card>
           </div>
-        </div>
-      </el-tab-pane>
-      
-      <el-tab-pane label="班级管理" name="classes">
-        <div class="classes-section">
+    </div>
+    
+    <div v-else class="management-section classes-section">
           <div class="section-header">
             <el-select v-model="selectedCourseId" placeholder="选择课程" clearable @change="handleCourseSelect">
               <el-option
@@ -163,9 +163,7 @@
               </el-table-column>
             </el-table>
           </el-card>
-        </div>
-      </el-tab-pane>
-    </el-tabs>
+    </div>
     
     <el-dialog
       v-model="courseDialogVisible"
@@ -384,11 +382,11 @@
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { getCourses, createCourse, updateCourse, deleteCourse } from '../../api/course'
 import { getAssignments } from '../../api/assignment'
-import { getClasses, createClass, getClassStudents, deleteClass as deleteClassApi, importStudents as importClassStudents, addStudentToClass } from '../../api/class'
+import { getClasses, createClass, updateClass, getClassStudents, deleteClass as deleteClassApi, importStudents as importClassStudents, addStudentToClass } from '../../api/class'
 import { getStudents } from '../../api/student'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -398,15 +396,17 @@ import {
   User,
   Document,
   Calendar,
-  UploadFilled,
-  ArrowRight
+  UploadFilled
 } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
-const activeTab = ref('courses')
+const isClassPage = computed(() => route.path === '/teacher/classes')
+const pageTitle = computed(() => isClassPage.value ? '班级管理' : '课程管理')
+const pageDescription = computed(() => isClassPage.value ? '新建班级、导入学生并维护班级名单' : '管理课程基础信息和课程概览')
 const courseSearch = ref('')
 const courseStatusFilter = ref('')
 const selectedCourseId = ref('')
@@ -458,11 +458,11 @@ const classRules: FormRules = {
   courseId: [{ required: true, message: '请选择课程', trigger: 'change' }]
 }
 
-const courses = ref([])
+const courses = ref<any[]>([])
 
-const classes = ref([])
+const classes = ref<any[]>([])
 
-const students = ref([])
+const students = ref<any[]>([])
 
 const filteredCourses = computed(() => {
   let result = courses.value
@@ -486,7 +486,7 @@ const filteredClasses = computed(() => {
   let result = classes.value
   
   if (selectedCourseId.value) {
-    result = result.filter(c => c.courseId === selectedCourseId.value)
+    result = result.filter(c => String(c.courseId) === String(selectedCourseId.value))
   }
   
   if (classSearch.value) {
@@ -506,12 +506,6 @@ const filteredStudents = computed(() => {
     s.name.toLowerCase().includes(keyword)
   )
 })
-
-const getScoreType = (score: number): 'success' | 'warning' | 'danger' => {
-  if (score >= 90) return 'success'
-  if (score >= 60) return 'warning'
-  return 'danger'
-}
 
 const showCreateCourseDialog = () => {
   editingCourse.value = null
@@ -617,10 +611,10 @@ const loadCourses = async () => {
     const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
 
     // 按 course_id 统计班级数
-    const classCountByCourse: Record<number, number> = {}
-    const classesByCourse: Record<number, any[]> = {}
+    const classCountByCourse: Record<string, number> = {}
+    const classesByCourse: Record<string, any[]> = {}
     for (const cls of apiClasses) {
-      const cid = cls.course_id || cls.courseId
+      const cid = String(cls.course_id || cls.courseId || '')
       if (cid) {
         classCountByCourse[cid] = (classCountByCourse[cid] || 0) + 1
         if (!classesByCourse[cid]) classesByCourse[cid] = []
@@ -629,11 +623,11 @@ const loadCourses = async () => {
     }
 
     // 按 course_id 统计作业数（通过 class_id → course_id 关联）
-    const assignmentCountByCourse: Record<number, number> = {}
+    const assignmentCountByCourse: Record<string, number> = {}
     for (const a of apiAssignments) {
-      const cls = apiClasses.find((c: any) => (c.class_id || c.id) === (a.class_id || a.classId))
+      const cls = apiClasses.find((c: any) => String(c.class_id || c.id) === String(a.class_id || a.classId))
       if (cls) {
-        const cid = cls.course_id || cls.courseId
+        const cid = String(cls.course_id || cls.courseId || '')
         if (cid) {
           assignmentCountByCourse[cid] = (assignmentCountByCourse[cid] || 0) + 1
         }
@@ -642,10 +636,10 @@ const loadCourses = async () => {
 
     if (coursesRes.code === 200 && coursesRes.data) {
       courses.value = (coursesRes.data || []).map((course: any) => {
-        const cid = course.course_id || course.id
+        const cid = String(course.course_id || course.id || '')
         return {
           ...course,
-          id: cid,
+          id: course.course_id || course.id,
           name: course.course_name || course.name,
           code: course.course_code || course.code,
           color: course.color || '#165DFF',
@@ -661,14 +655,17 @@ const loadCourses = async () => {
   }
 }
 
-onMounted(() => {
-  loadCourses()
-  loadClasses()
+onMounted(async () => {
+  await loadCourses()
+  if (isClassPage.value && !selectedCourseId.value && courses.value.length > 0) {
+    selectedCourseId.value = courses.value[0].id
+  }
+  await loadClasses()
 })
 
 const manageClasses = (course: any) => {
   selectedCourseId.value = course.id
-  activeTab.value = 'classes'
+  router.push('/teacher/classes')
 }
 
 const handleCourseSelect = () => {
@@ -676,6 +673,10 @@ const handleCourseSelect = () => {
 }
 
 const showCreateClassDialog = () => {
+  if (!selectedCourseId.value) {
+    ElMessage.warning('请先选择一个课程')
+    return
+  }
   editingClass.value = null
   Object.assign(classForm, {
     name: '',
@@ -702,19 +703,34 @@ const saveClass = async () => {
     await classFormRef.value.validate()
 
     if (editingClass.value) {
-      ElMessage.success('班级更新成功')
-    } else {
-      const response = await createClass({
-        courseId: Number(classForm.courseId),
+      const classId = editingClass.value.id || editingClass.value.class_id
+      const response = await updateClass(String(classId), {
         className: classForm.name,
         classCode: classForm.classCode
       })
 
-      if (response.code === 200 && response.data) {
+      if ((response.code === 200 || response.code === 201) && response.data) {
+        ElMessage.success('班级更新成功')
+        await loadClasses()
+        await loadCourses()
+      } else {
+        ElMessage.error('班级更新失败')
+      }
+    } else {
+      const response = await createClass({
+        courseId: classForm.courseId,
+        className: classForm.name,
+        classCode: classForm.classCode
+      })
+
+      if (response && (response.code === 200 || response.code === 201)) {
         ElMessage.success('班级创建成功')
         await loadClasses()
+        await loadCourses()
+        classDialogVisible.value = false
       } else {
-        ElMessage.error('班级创建失败')
+  // 如果走到这里，说明后端返回了非 200/201 但拦截器没抛错
+        ElMessage.error(response?.message || '班级创建失败')
       }
     }
 
@@ -918,12 +934,13 @@ const loadClasses = async () => {
   try {
     const response = await getClasses()
     if (response.code === 200 && response.data) {
+      const courseNameById = new Map(courses.value.map((course: any) => [String(course.id), course.name]))
       const list = (response.data || []).map((cls: any) => ({
         ...cls,
         id: cls.class_id || cls.id,
         name: cls.class_name || cls.name,
         courseId: cls.course_id || cls.courseId,
-        courseName: cls.course_name || '',
+        courseName: cls.course_name || courseNameById.get(String(cls.course_id || cls.courseId)) || '',
         studentCount: 0,
         createTime: cls.create_time || ''
       }))
@@ -983,6 +1000,12 @@ const handleLogout = () => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(22, 93, 255, 0.1);
+  border-radius: var(--border-radius-md);
+  background:
+    linear-gradient(90deg, rgba(22, 93, 255, 0.09), rgba(124, 58, 237, 0.08) 52%, rgba(255, 125, 0, 0.08)),
+    var(--bg-primary);
 }
 
 .header-left h1 {
@@ -1014,7 +1037,7 @@ const handleLogout = () => {
   }
 }
 
-.management-tabs {
+.management-section {
   margin-top: var(--spacing-lg);
 }
 
@@ -1035,13 +1058,15 @@ const handleLogout = () => {
 }
 
 .course-card {
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(22, 93, 255, 0.1);
   transition: all var(--transition-fast);
+  overflow: hidden;
 }
 
 .course-card:hover {
-  border-color: var(--primary-color);
-  box-shadow: var(--shadow-light);
+  border-color: rgba(124, 58, 237, 0.35);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .course-header {
@@ -1051,7 +1076,7 @@ const handleLogout = () => {
 }
 
 .course-color {
-  width: 4px;
+  width: 5px;
   border-radius: var(--border-radius-full);
   flex-shrink: 0;
 }
@@ -1087,6 +1112,9 @@ const handleLogout = () => {
   gap: var(--spacing-xs);
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background: var(--bg-hover);
+  border-radius: var(--border-radius-sm);
 }
 
 .course-classes {
@@ -1109,7 +1137,7 @@ const handleLogout = () => {
 }
 
 .classes-table-card {
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(8, 145, 178, 0.16);
 }
 
 .color-picker {

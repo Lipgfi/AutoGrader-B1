@@ -48,7 +48,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { User, ArrowRight, HomeFilled, Document, Files, PieChart, Setting } from '@element-plus/icons-vue'
+import { User, ArrowRight, HomeFilled, Document, Files, PieChart, Setting, OfficeBuilding } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -74,6 +74,7 @@ const menuItems = computed(() => {
     ],
     teacher: [
       { path: '/teacher/courses', label: '课程管理', icon: HomeFilled },
+      { path: '/teacher/classes', label: '班级管理', icon: OfficeBuilding },
       { path: '/teacher/assignments', label: '作业管理', icon: Document },
       { path: '/teacher/questions', label: '题库管理', icon: Files },
       { path: '/teacher/grades', label: '成绩管理', icon: PieChart }
@@ -102,13 +103,13 @@ const handleLogout = () => {
 .layout-container {
   display: flex;
   height: 100vh;
-  background-color: #f5f5f5;
+  background: var(--surface-gradient);
 }
 
 .sidebar {
-  width: 200px;
-  background: #ffffff;
-  border-right: 1px solid #e8e8e8;
+  width: 216px;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fbff 58%, #fff7ed 100%);
+  border-right: 1px solid rgba(22, 93, 255, 0.12);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -116,19 +117,19 @@ const handleLogout = () => {
   top: 0;
   height: 100%;
   z-index: 100;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+  box-shadow: 4px 0 18px rgba(22, 93, 255, 0.08);
 }
 
 .logo-section {
   padding: 20px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid rgba(22, 93, 255, 0.1);
   text-align: center;
 }
 
 .logo {
   font-size: 18px;
   font-weight: 600;
-  color: #1890ff;
+  color: var(--primary-color);
   margin: 0;
 }
 
@@ -155,12 +156,13 @@ const handleLogout = () => {
 }
 
 .sidebar-menu :deep(.el-menu-item:hover) {
-  background-color: #f6f6f6;
+  background-color: var(--primary-bg);
 }
 
 .sidebar-menu :deep(.el-menu-item.is-active) {
-  background-color: #e6f7ff;
-  color: #1890ff;
+  background: linear-gradient(90deg, var(--primary-bg), var(--accent-bg));
+  color: var(--primary-color);
+  box-shadow: inset 3px 0 0 var(--warning-color);
 }
 
 .sidebar-menu :deep(.el-menu-item i) {
@@ -183,7 +185,7 @@ const handleLogout = () => {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -220,9 +222,9 @@ const handleLogout = () => {
 
 .main-content {
   flex: 1;
-  margin-left: 200px;
+  margin-left: 216px;
   min-height: 100vh;
   padding: 24px;
-  background-color: #f5f5f5;
+  background: transparent;
 }
 </style>

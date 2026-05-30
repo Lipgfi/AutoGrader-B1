@@ -170,6 +170,8 @@ const refreshCaptcha = () => {
   captchaCode.value = generateCaptcha()
 }
 
+const normalizeRole = (role?: string) => (role || '').toLowerCase()
+
 const handleLogin = async () => {
   if (!loginFormRef.value) return
   
@@ -201,9 +203,6 @@ const handleLogin = async () => {
     if (response.code === 200 && response.data) {
       const { token, user, role, userId } = response.data
       
-      // 保存token
-      userStore.setToken(token)
-      
       // 兼容两种响应格式：{token, user: {...}} 或 {token, role, userId}
       let userInfo = user
       if (!user && role && userId) {
@@ -214,7 +213,18 @@ const handleLogin = async () => {
           username: loginForm.username
         }
       }
-      userStore.setUserInfo(userInfo)
+
+      const userRole = normalizeRole(userInfo?.role || role)
+      if (userRole !== normalizeRole(loginForm.role)) {
+        userStore.logout()
+        ElMessage.error('账号身份与当前选择的登录入口不一致，请切换身份后再登录')
+        refreshCaptcha()
+        return
+      }
+
+      // 保存token
+      userStore.setToken(token)
+      userStore.setUserInfo(userInfo ? { ...userInfo, role: userRole } : { username: loginForm.username, role: userRole })
       
       // 如果勾选了记住密码，保存到localStorage
       if (loginForm.remember) {
@@ -228,8 +238,7 @@ const handleLogin = async () => {
       
       ElMessage.success('登录成功')
       
-      // 根据返回的用户角色跳转，兼容两种响应格式
-      const userRole = user?.role || role || loginForm.role
+      // 根据返回的用户角色跳转
       console.log('[Login] 用户角色:', userRole)
       
       let redirectPath = '/student/courses'

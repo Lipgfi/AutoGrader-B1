@@ -6,6 +6,12 @@
   --primary-hover: #4080FF;
   --primary-active: #0E42D2;
   --primary-bg: #E8F3FF;
+  --accent-color: #7C3AED;
+  --accent-light: #A78BFA;
+  --accent-bg: #F3E8FF;
+  --cyan-color: #0891B2;
+  --cyan-bg: #E0F7FA;
+  --surface-gradient: linear-gradient(135deg, #F7FAFF 0%, #F4F0FF 48%, #FFF7ED 100%);
   
   /* 辅助色 */
   --success-color: #00B42A;
@@ -29,7 +35,7 @@
   
   /* 背景色 */
   --bg-primary: #FFFFFF;
-  --bg-secondary: #F2F3F5;
+  --bg-secondary: #F6F8FC;
   --bg-tertiary: #E5E6EB;
   --bg-hover: #F7F8FA;
   --bg-card: #FFFFFF;

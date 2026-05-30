@@ -78,6 +78,12 @@ const routes = [
         meta: { title: '课程管理', role: 'teacher' }
       },
       {
+        path: 'classes',
+        name: 'TeacherClasses',
+        component: () => import('../views/teacher/CourseManagement.vue'),
+        meta: { title: '班级管理', role: 'teacher' }
+      },
+      {
         path: 'assignments',
         name: 'TeacherAssignments',
         component: () => import('../views/teacher/AssignmentManagement.vue'),

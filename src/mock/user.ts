@@ -63,20 +63,11 @@ export default [
     method: 'post',
     response: ({ body }: { body: any }) => {
       console.log('[Mock] 收到登录请求:', body)
-      const { username, password, role } = body
-      
+      const { username, password } = body
+
       const user = mockUsers.find(u => u.username === username && u.passwordHash === password)
-      
+
       if (user) {
-        // 验证角色是否匹配
-        if (role && user.role !== role) {
-          return {
-            code: 401,
-            message: '账号或角色错误',
-            data: null
-          }
-        }
-        
         return {
           code: 200,
           message: '登录成功',

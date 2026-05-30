@@ -91,7 +91,7 @@
               type="primary"
               link
               size="small"
-              @click="publishAssignment(scope.row)"
+              @click="handlePublishAssignment(scope.row)"
             >
               发布
             </el-button>
@@ -335,8 +335,13 @@
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { request } from '../../api/interceptors'
-import { getAssignments, createAssignment, updateAssignment, deleteAssignment as deleteAssignmentApi } from '../../api/assignment'
+import {
+  getAssignments,
+  createAssignment,
+  updateAssignment,
+  deleteAssignment as deleteAssignmentApi,
+  publishAssignment as publishAssignmentApi
+} from '../../api/assignment'
 import { getCourses } from '../../api/course'
 import { getQuestions } from '../../api/question'
 import { getClasses } from '../../api/class'
@@ -374,24 +379,24 @@ const formRules: FormRules = {
   deadline: [{ required: true, message: '请选择截止时间', trigger: 'change' }]
 }
 
-const courses = ref([])
+const courses = ref<any[]>([])
 
-const classes = ref([])
+const classes = ref<any[]>([])
 
-const questions = ref([])
+const questions = ref<any[]>([])
 
-const assignments = ref([])
+const assignments = ref<any[]>([])
 
 const filteredClasses = computed(() => {
   if (!assignmentForm.courseId) return []
-  return classes.value.filter(c => c.courseId === assignmentForm.courseId)
+  return classes.value.filter(c => String(c.courseId) === String(assignmentForm.courseId))
 })
 
 const filteredAssignments = computed(() => {
   let result = assignments.value
   
   if (filterCourse.value) {
-    result = result.filter(a => a.courseId === filterCourse.value)
+    result = result.filter(a => String(a.courseId) === String(filterCourse.value))
   }
   
   if (filterStatus.value) {
@@ -460,6 +465,20 @@ const handleCourseChange = () => {
   assignmentForm.classId = ''
 }
 
+const toApiId = (value: string) => {
+  const numeric = Number(value)
+  return Number.isNaN(numeric) ? value : numeric
+}
+
+const buildAssignmentPayload = () => ({
+  title: assignmentForm.title,
+  class_id: toApiId(assignmentForm.classId),
+  question_id: toApiId(assignmentForm.questionId),
+  due_date: assignmentForm.deadline,
+  description: assignmentForm.description,
+  total_score: assignmentForm.totalScore
+})
+
 const saveDraft = async () => {
   if (!formRef.value) return
   
@@ -467,15 +486,9 @@ const saveDraft = async () => {
     await formRef.value.validate()
     
     // 调用API创建作业
-    const response = await createAssignment({
-      title: assignmentForm.title,
-      classId: Number(assignmentForm.classId),
-      question_id: assignmentForm.questionId,
-      dueDate: assignmentForm.deadline,
-      description: assignmentForm.description
-    })
+    const response = await createAssignment(buildAssignmentPayload())
     
-    if (response.code === 200 && response.data) {
+    if ((response.code === 200 || response.code === 201) && response.data) {
       ElMessage.success('草稿保存成功')
       createDialogVisible.value = false
       // 刷新作业列表
@@ -507,7 +520,8 @@ const loadData = async () => {
       classes.value = (classesResponse.data || []).map((c: any) => ({
         id: c.class_id || c.id,
         name: c.class_name || c.name,
-        courseId: c.course_id || c.courseId
+        courseId: c.course_id || c.courseId,
+        courseName: c.course_name || ''
       }))
     }
 
@@ -526,16 +540,16 @@ const loadData = async () => {
       const rawList = (assignmentsResponse.data || []).map((a: any) => ({
         ...a,
         id: a.assignment_id || a.id,
-        title: a.title || '',
+        title: a.title || a.name || '',
         description: a.description || '',
         classId: a.class_id || a.classId,
-        courseId: classes.value.find((c: any) => c.id === a.class_id)?.courseId || a.course_id || '',
-        courseName: a.class_name || classes.value.find((c: any) => c.id === a.class_id)?.name || '',
-        className: a.class_name || classes.value.find((c: any) => c.id === a.class_id)?.name || '',
+        courseId: classes.value.find((c: any) => String(c.id) === String(a.class_id || a.classId))?.courseId || a.course_id || '',
+        courseName: a.course_name || classes.value.find((c: any) => String(c.id) === String(a.class_id || a.classId))?.courseName || '',
+        className: a.class_name || classes.value.find((c: any) => String(c.id) === String(a.class_id || a.classId))?.name || '',
         questionId: a.question_id || '',
-        questionTitle: questions.value.find((q: any) => q.id === a.question_id)?.title || '',
+        questionTitle: questions.value.find((q: any) => String(q.id) === String(a.question_id || a.questionId))?.title || '',
         deadline: formatDeadline(a.due_date || a.deadline || ''),
-        status: a.is_published ? 'published' : 'draft',
+        status: a.status || (a.is_published ? 'published' : 'draft'),
         submitRate: 0,
         passRate: 0,
         totalStudents: 0,
@@ -579,7 +593,13 @@ const saveAssignment = async () => {
     await formRef.value.validate()
 
     if (editingAssignment.value) {
-      ElMessage.info('作业编辑暂不支持保存到数据库')
+      const response = await updateAssignment(String(editingAssignment.value.id), buildAssignmentPayload())
+      if (response.code === 200) {
+        ElMessage.success('作业保存成功')
+        await loadData()
+      } else {
+        ElMessage.error(response.message || '保存失败')
+      }
     } else {
       await saveDraft()
     }
@@ -590,14 +610,17 @@ const saveAssignment = async () => {
   }
 }
 
-const publishAssignment = (assignment: any) => {
+const handlePublishAssignment = (assignment: any) => {
   ElMessageBox.confirm('确定要发布此作业吗？发布后题目将不可修改。', '发布确认', {
     confirmButtonText: '确定发布',
     cancelButtonText: '取消',
     type: 'warning'
   }).then(async () => {
     try {
-      await request.put(`/assignments/${assignment.id}/publish`)
+      const response = await publishAssignmentApi(String(assignment.id))
+      if (response.code !== 200) {
+        throw new Error(response.message || '发布失败')
+      }
       assignment.status = 'published'
       ElMessage.success('作业发布成功')
     } catch (e) {
@@ -615,7 +638,7 @@ const editDeadline = (assignment: any) => {
 const confirmDeadlineChange = async () => {
   if (!selectedAssignment.value || !newDeadline.value) return
   try {
-    await updateAssignment(String(selectedAssignment.value.id), { dueDate: newDeadline.value })
+    await updateAssignment(String(selectedAssignment.value.id), { due_date: newDeadline.value })
     selectedAssignment.value.deadline = newDeadline.value
     ElMessage.success('截止时间修改成功')
     deadlineDialogVisible.value = false
@@ -674,6 +697,12 @@ const deleteAssignment = async (assignment: any) => {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  border: 1px solid rgba(255, 125, 0, 0.16);
+  border-radius: var(--border-radius-md);
+  background:
+    linear-gradient(90deg, rgba(255, 125, 0, 0.09), rgba(8, 145, 178, 0.08) 50%, rgba(22, 93, 255, 0.08)),
+    var(--bg-primary);
 }
 
 .header-left h1 {
@@ -693,6 +722,10 @@ const deleteAssignment = async (assignment: any) => {
   display: flex;
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(22, 93, 255, 0.08);
+  border-radius: var(--border-radius-md);
 }
 
 .filter-select {
@@ -704,7 +737,7 @@ const deleteAssignment = async (assignment: any) => {
 }
 
 .assignments-card {
-  border: 1px solid var(--border-light);
+  border: 1px solid rgba(22, 93, 255, 0.12);
 }
 
 .assignment-title {
@@ -816,7 +849,7 @@ const deleteAssignment = async (assignment: any) => {
 .stat-card {
   text-align: center;
   padding: var(--spacing-lg);
-  background-color: var(--bg-secondary);
+  background: linear-gradient(135deg, var(--primary-bg), var(--accent-bg));
   border-radius: var(--border-radius-md);
 }
 
