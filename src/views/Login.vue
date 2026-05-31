@@ -5,7 +5,7 @@
       <div class="background-shape shape-2"></div>
       <div class="background-shape shape-3"></div>
     </div>
-    
+
     <div class="login-form-wrapper">
       <div class="login-header">
         <div class="logo-container">
@@ -20,7 +20,7 @@
         </div>
         <p class="subtitle">在线编程作业评测系统</p>
       </div>
-      
+
       <el-form
         ref="loginFormRef"
         :model="loginForm"
@@ -46,7 +46,7 @@
             </el-radio-button>
           </el-radio-group>
         </div>
-        
+
         <el-form-item label="账号" prop="username">
           <el-input
             v-model="loginForm.username"
@@ -56,7 +56,7 @@
             clearable
           />
         </el-form-item>
-        
+
         <el-form-item label="密码" prop="password">
           <el-input
             v-model="loginForm.password"
@@ -67,7 +67,7 @@
             size="large"
           />
         </el-form-item>
-        
+
         <el-form-item label="验证码" prop="captcha">
           <div class="captcha-container">
             <el-input
@@ -85,7 +85,7 @@
             </div>
           </div>
         </el-form-item>
-        
+
         <div class="form-options">
           <el-checkbox v-model="loginForm.remember" class="remember-checkbox">
             <span class="remember-text">记住密码</span>
@@ -94,7 +94,7 @@
             忘记密码？
           </el-link>
         </div>
-        
+
         <el-form-item class="submit-item">
           <el-button
             type="primary"
@@ -107,7 +107,7 @@
             <span v-else>登录中...</span>
           </el-button>
         </el-form-item>
-        
+
         <div class="register-link">
           <span class="register-text">还没有账号？</span>
           <el-link type="primary" :underline="false" @click="$router.push('/register')">
@@ -174,39 +174,39 @@ const normalizeRole = (role?: string) => (role || '').toLowerCase()
 
 const handleLogin = async () => {
   if (!loginFormRef.value) return
-  
+
   try {
     await loginFormRef.value.validate()
-    
+
     if (loginForm.captcha.toUpperCase() !== captchaCode.value) {
       ElMessage.error('验证码错误')
       refreshCaptcha()
       return
     }
-    
+
     loading.value = true
-    
+
     console.log('[Login] 发送登录请求:', {
       username: loginForm.username,
       password: loginForm.password,
       role: loginForm.role
     })
-    
+
     const response = await login({
       username: loginForm.username,
       password: loginForm.password,
       role: loginForm.role
     })
-    
+
     console.log('[Login] 收到登录响应:', response)
-    
+
     if (response.code === 200 && response.data) {
       const { token, user, role, userId } = response.data
-      
-      // 兼容两种响应格式：{token, user: {...}} 或 {token, role, userId}
+
+      userStore.setToken(token)
+
       let userInfo = user
       if (!user && role && userId) {
-        // 后端返回格式：{token, role, userId}
         userInfo = {
           id: userId,
           role: role,
@@ -222,11 +222,8 @@ const handleLogin = async () => {
         return
       }
 
-      // 保存token
-      userStore.setToken(token)
       userStore.setUserInfo(userInfo ? { ...userInfo, role: userRole } : { username: loginForm.username, role: userRole })
-      
-      // 如果勾选了记住密码，保存到localStorage
+
       if (loginForm.remember) {
         localStorage.setItem('autograder_remember', JSON.stringify({
           username: loginForm.username,
@@ -235,14 +232,12 @@ const handleLogin = async () => {
       } else {
         localStorage.removeItem('autograder_remember')
       }
-      
+
       ElMessage.success('登录成功')
-      
-      // 根据返回的用户角色跳转
-      console.log('[Login] 用户角色:', userRole)
-      
+
+      const redirectRole = userRole || loginForm.role
       let redirectPath = '/student/courses'
-      switch (userRole) {
+      switch (redirectRole) {
         case 'student':
           redirectPath = '/student/courses'
           break
@@ -253,7 +248,7 @@ const handleLogin = async () => {
           redirectPath = '/admin/dashboard'
           break
       }
-      
+
       console.log('[Login] 跳转到:', redirectPath)
       router.push(redirectPath)
     } else {
@@ -271,8 +266,7 @@ const handleLogin = async () => {
 
 onMounted(() => {
   refreshCaptcha()
-  
-  // 检查是否有记住的账号
+
   const saved = localStorage.getItem('autograder_remember')
   if (saved) {
     try {
@@ -549,43 +543,27 @@ onMounted(() => {
     margin: var(--spacing-md);
     max-width: 100%;
   }
-  
+
   .logo-container {
     flex-direction: column;
     gap: var(--spacing-sm);
   }
-  
+
   .login-header h1 {
     font-size: var(--font-size-xl);
   }
-  
+
   .captcha-image {
     width: 100px;
   }
-  
+
   .captcha-char {
     font-size: 16px;
   }
-  
+
   .role-group :deep(.el-radio-button__inner) {
     padding: var(--spacing-sm);
     font-size: var(--font-size-xs);
-  }
-}
-
-@media (max-width: 480px) {
-  .login-container {
-    padding: var(--spacing-md);
-  }
-  
-  .login-form-wrapper {
-    padding: var(--spacing-lg);
-  }
-  
-  .form-options {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-    align-items: flex-start;
   }
 }
 </style>

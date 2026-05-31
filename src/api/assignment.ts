@@ -10,27 +10,34 @@ export const getAssignmentDetail = async (assignmentId: string) => {
   return await request.get(`/assignments/${assignmentId}`)
 }
 
-// 创建作业 - 强制使用驼峰命名，与后端一致
+// 创建作业 - 字段名与 B4 AssignmentCreate 保持一致
 export const createAssignment = async (data: any) => {
-  // 确保所有字段都是驼峰命名
   const payload = {
     title: data.title,
     classId: Number(data.classId ?? data.class_id),
-    questionId: Number(data.questionId ?? data.question_id),
+    question_id: String(data.question_id ?? data.questionId ?? ''),
     dueDate: data.dueDate ?? data.due_date ?? data.deadline,
-    description: data.description,
-    totalScore: data.totalScore ?? data.total_score ?? 100
+    description: data.description ?? '',
+    isPublished: data.isPublished ?? data.is_published ?? false,
+    allowResubmit: data.allowResubmit ?? data.allow_resubmit ?? true
   }
-  
-  console.log('createAssignment payload:', JSON.stringify(payload, null, 2))
-  
-  // 直接调用 axiosInstance.post，确保 data 不被包装
+
   return await request.post('/assignments', payload)
 }
 
 // 更新作业
 export const updateAssignment = async (assignmentId: string, data: any) => {
-  return await request.put(`/assignments/${assignmentId}`, data)
+  const payload: Record<string, unknown> = {}
+
+  if (data.title !== undefined) payload.title = data.title
+  if (data.description !== undefined) payload.description = data.description
+
+  const dueDate = data.dueDate ?? data.due_date ?? data.deadline
+  if (dueDate) payload.dueDate = dueDate
+
+  if (data.allowResubmit !== undefined) payload.allowResubmit = data.allowResubmit
+
+  return await request.put(`/assignments/${assignmentId}`, payload)
 }
 
 // 发布作业

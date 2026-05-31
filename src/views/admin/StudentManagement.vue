@@ -12,7 +12,7 @@
           action="#"
           :auto-upload="false"
           :on-change="handleFileChange"
-          accept=".xlsx, .xls"
+          accept=".csv,.xlsx,.xls,.pdf"
         >
           <el-button type="primary">
             <el-icon><Upload /></el-icon>
@@ -115,11 +115,11 @@
       </div>
     </el-card>
     
-    <!-- 导入结果弹窗 -->
+    <!-- 导入预览/结果弹窗 -->
     <el-dialog
       v-model="importDialogVisible"
-      title="导入结果"
-      width="600px"
+      :title="importResult ? '导入结果' : '数据预览'"
+      width="700px"
       :close-on-click-modal="false"
     >
       <div v-if="importResult" class="import-result">
@@ -133,7 +133,7 @@
             <span class="stat-label">导入失败</span>
           </div>
         </div>
-        
+
         <div v-if="importResult.failed > 0" class="failed-list">
           <h3>失败详情</h3>
           <el-table :data="importResult.failedList" style="width: 100%">
@@ -142,9 +142,20 @@
           </el-table>
         </div>
       </div>
-      
+
+      <div v-else-if="previewData.length > 0" class="preview-section">
+        <p style="margin-bottom: 12px; color: #666;">共 {{ previewData.length }} 条数据，前5条预览：</p>
+        <el-table :data="previewData.slice(0, 5)" style="width: 100%" border size="small">
+          <el-table-column prop="id" label="学号" width="120" />
+          <el-table-column prop="name" label="姓名" width="100" />
+          <el-table-column prop="email" label="邮箱" />
+          <el-table-column prop="phone" label="手机号" width="120" />
+        </el-table>
+      </div>
+
       <template #footer>
-        <el-button @click="importDialogVisible = false">关闭</el-button>
+        <el-button @click="importDialogVisible = false; previewData = []; selectedImportFile = null">取消</el-button>
+        <el-button v-if="!importResult" type="primary" @click="confirmImport">确认导入</el-button>
       </template>
     </el-dialog>
     
@@ -187,49 +198,134 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  Upload, 
-  Download, 
+import {
+  Upload,
+  Download,
   Plus
 } from '@element-plus/icons-vue'
 import { getStudents, addStudent as addStudentApi, updateStudent, deleteStudent as deleteStudentApi, importStudents, resetStudentPassword } from '../../api/student'
 import { usePermissions } from '../../services/permissionService'
+import * as XLSX from 'xlsx'
+import * as pdfjsLib from 'pdfjs-dist'
 
-// 解析Excel文件（CSV格式）
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`
+
 function parseExcelFile(file: File): Promise<any[]> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       try {
-        const content = e.target?.result as string
-        const lines = content.split('\n').filter(line => line.trim())
-        
+        const data = new Uint8Array(e.target?.result as ArrayBuffer)
+        console.log('Excel读取成功，数据大小:', data.length)
+        const workbook = XLSX.read(data, { type: 'array' })
+        console.log('工作簿名称:', workbook.SheetNames)
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][]
+        console.log('Excel原始数据:', jsonData)
+
         const results: any[] = []
-        // 跳过表头，从第二行开始
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i]
+          if (row && row.length > 0) {
+            results.push({
+              id: String(row[0] || ''),
+              name: String(row[1] || ''),
+              username: String(row[2] || ''),
+              email: String(row[3] || ''),
+              phone: String(row[4] || ''),
+              status: 'active'
+            })
+          }
+        }
+        console.log('Excel解析结果:', results)
+        resolve(results)
+      } catch (error) {
+        console.error('Excel解析错误:', error)
+        reject(error)
+      }
+    }
+    reader.onerror = (err) => {
+      console.error('FileReader错误:', err)
+      reject(new Error('文件读取失败'))
+    }
+    reader.readAsArrayBuffer(file)
+  })
+}
+
+async function parsePDFFile(file: File): Promise<any[]> {
+  console.log('开始解析PDF文件')
+  const arrayBuffer = await file.arrayBuffer()
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+  console.log('PDF页数:', pdf.numPages)
+
+  let fullText = ''
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i)
+    const textContent = await page.getTextContent()
+    const pageText = textContent.items.map((item: any) => item.str).join(' ')
+    fullText += pageText + '\n'
+  }
+  console.log('PDF全文:', fullText.substring(0, 200))
+
+  const results: any[] = []
+  const lines = fullText.split(/[\n\r]+/).filter(line => line.trim())
+
+  for (const line of lines) {
+    const parts = line.split(/[\s,;,\t]+/).filter(p => p.trim())
+    if (parts.length >= 2) {
+      results.push({
+        id: parts[0] || '',
+        name: parts[1] || '',
+        username: parts[0] || '',
+        email: parts.find(p => p.includes('@')) || '',
+        phone: parts.find(p => /^1[3-9]\d{9}$/.test(p)) || '',
+        status: 'active'
+      })
+    }
+  }
+  console.log('PDF解析结果:', results)
+
+  return results
+}
+
+function parseCSVFile(file: File): Promise<any[]> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        console.log('CSV内容:', content.substring(0, 200))
+        const lines = content.split('\n').filter(line => line.trim())
+        console.log('CSV行数:', lines.length)
+
+        const results: any[] = []
         for (let i = 1; i < lines.length; i++) {
           const line = lines[i].trim()
           if (!line) continue
-          
-          // 支持逗号、分号、制表符分隔
+
           const parts = line.split(/[,;\t]/).map(p => p.trim())
-          
           if (parts.length >= 2) {
             results.push({
               id: parts[0] || '',
               name: parts[1] || '',
-              username: parts[2] || '',
+              username: parts[2] || parts[0] || '',
               email: parts[3] || '',
               phone: parts[4] || '',
               status: 'active'
             })
           }
         }
+        console.log('CSV解析结果:', results)
         resolve(results)
       } catch (error) {
+        console.error('CSV解析错误:', error)
         reject(error)
       }
     }
-    reader.onerror = () => reject(new Error('文件读取失败'))
+    reader.onerror = (err) => {
+      console.error('FileReader错误:', err)
+      reject(new Error('文件读取失败'))
+    }
     reader.readAsText(file, 'UTF-8')
   })
 }
@@ -292,6 +388,8 @@ const importDialogVisible = ref(false)
 const studentDialogVisible = ref(false)
 const isEdit = ref(false)
 const importResult = ref<any>(null)
+const previewData = ref<any[]>([])
+const selectedImportFile = ref<File | null>(null)
 
 const form = ref({
   id: '',
@@ -354,33 +452,93 @@ const filteredStudents = computed(() => {
   return result
 })
 
-const handleFileChange = async (file: any) => {
+const handleFileChange = async (file: any, fileList: any[]) => {
+  console.log('handleFileChange 被调用', { file, fileList })
+  
+  // 检查是否是删除文件的操作
+  if (!file.raw) {
+    console.log('文件被删除，清空预览')
+    selectedImportFile.value = null
+    previewData.value = []
+    return
+  }
+
+  selectedImportFile.value = file.raw
+  const fileName = file.raw.name.toLowerCase()
+
+  console.log('开始解析文件:', fileName, '文件大小:', file.raw.size)
+
   try {
-    const result = await processBatchImport(file.raw)
-    
-    const successList = (result as any)?.success || []
-    const failedList = (result as any)?.failed || []
-    
-    importResult.value = {
-      success: successList.length,
-      failed: failedList.length,
-      failedList: failedList.map((item: any) => ({
-        row: item.row,
-        reason: item.reason
-      }))
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      previewData.value = await parseExcelFile(file.raw)
+      console.log('Excel解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else if (fileName.endsWith('.pdf')) {
+      previewData.value = await parsePDFFile(file.raw)
+      console.log('PDF解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else if (fileName.endsWith('.csv')) {
+      previewData.value = await parseCSVFile(file.raw)
+      console.log('CSV解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else {
+      ElMessage.warning('不支持的文件格式')
+      return
     }
-    
-    // 导入成功的学生添加到列表
-    successList.forEach((student: any) => {
-      const existingIndex = students.value.findIndex(s => s.id === student.id)
-      if (existingIndex === -1) {
-        students.value.push(student)
+
+    if (previewData.value.length > 0) {
+      importDialogVisible.value = true
+    }
+  } catch (error: any) {
+    console.error('文件解析失败:', error)
+    ElMessage.error('文件解析失败: ' + (error.message || '未知错误'))
+    previewData.value = []
+  }
+}
+
+const confirmImport = async () => {
+  if (!selectedImportFile.value) {
+    ElMessage.warning('请先选择要导入的文件')
+    return
+  }
+
+  try {
+    ElMessage.info('正在导入学生，请稍候...')
+    const result = await importStudents(0, selectedImportFile.value)
+
+    if (result.code === 200) {
+      const data = result.data || {}
+      const successCount = data.success_count || 0
+      const failCount = data.fail_count || 0
+      const failReasons = data.fail_reasons || []
+
+      importResult.value = {
+        success: successCount,
+        failed: failCount,
+        failedList: failReasons.map((item: any, index: number) => ({
+          row: index + 1,
+          reason: item
+        }))
       }
-    })
-    
-    importDialogVisible.value = true
-  } catch (error) {
-    ElMessage.error(error instanceof Error ? error.message : '导入失败')
+
+      if (successCount > 0) {
+        ElMessage.success(`成功导入 ${successCount} 名学生`)
+        await loadStudents()
+      }
+
+      if (failCount > 0) {
+        ElMessage.warning(`${failCount} 名学生导入失败`)
+      }
+    } else {
+      ElMessage.error(result.msg || '导入失败')
+    }
+  } catch (error: any) {
+    console.error('[confirmImport] 导入失败:', error)
+    ElMessage.error(error?.response?.data?.detail || error?.message || '导入失败')
+  } finally {
+    importDialogVisible.value = false
+    selectedImportFile.value = null
+    previewData.value = []
   }
 }
 

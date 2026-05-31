@@ -20,12 +20,15 @@ const allMocks = [
 // 创建axios实例
 const apiBaseURL = import.meta.env.VITE_B4_API_BASE_URL || 'http://127.0.0.1:8000/api/v1'
 
-const axiosInstance: AxiosInstance = axios.create({
+export const axiosInstance: AxiosInstance = axios.create({
   baseURL: apiBaseURL,
-  timeout: 10000,
-  headers: {
-    'Content-Type': 'application/json'
-  }
+  timeout: 10000
+  // ============================================
+  // 修复: 移除全局 Content-Type，让请求拦截器根据数据类型动态设置
+  // ============================================
+  // 原问题：全局设置 'Content-Type': 'application/json' 会覆盖 FormData 的 multipart/form-data
+  // 当上传文件时，浏览器需要自动设置 Content-Type: multipart/form-data; boundary=...
+  // 如果全局强制为 application/json，后端就无法正确解析文件上传
 })
 
 // 请求拦截器
@@ -35,6 +38,19 @@ axiosInstance.interceptors.request.use(
     if (userStore.token) {
       config.headers.Authorization = `Bearer ${userStore.token}`
     }
+
+    // ============================================
+    // 修复: 动态设置 Content-Type
+    // ============================================
+    // FormData 时让浏览器自动处理 multipart/form-data（不设置 Content-Type）
+    // 其他情况默认使用 application/json
+    if (config.data instanceof FormData) {
+      // 删除 Content-Type，让浏览器自动设置 multipart/form-data; boundary=...
+      delete config.headers['Content-Type']
+    } else if (!config.headers['Content-Type']) {
+      config.headers['Content-Type'] = 'application/json'
+    }
+
     console.log('[Request]', config.method?.toUpperCase(), config.url, config.data || config.params)
     return config
   },
@@ -56,7 +72,7 @@ axiosInstance.interceptors.response.use(
       console.error('[Response Error Status]', error.response.status)
       console.error('[Response Error Data]', JSON.stringify(error.response.data, null, 2))
       console.error('[Response Error Headers]', JSON.stringify(error.response.headers, null, 2))
-      
+
       switch (error.response.status) {
         case 401:
           ElMessage.error('未授权，请重新登录')
@@ -103,12 +119,12 @@ axiosInstance.interceptors.response.use(
 const mockRequest = (url: string, method: string, data?: any) => {
   const fullUrl = '/api/v1' + url
   console.log('[Mock] 检查请求:', fullUrl, method)
-  
+
   const mock = allMocks.find(m => {
     const mockUrl = m.url
     const mockMethod = m.method?.toLowerCase()
     const matchMethod = mockMethod === method.toLowerCase()
-    
+
     let matchUrl = false
     if (mockUrl.includes('*')) {
       const regex = new RegExp('^' + mockUrl.replace(/\*/g, '[^/]+') + '$')
@@ -116,19 +132,19 @@ const mockRequest = (url: string, method: string, data?: any) => {
     } else {
       matchUrl = mockUrl === fullUrl
     }
-    
+
     console.log('[Mock] 检查接口:', mockUrl, mockMethod, '匹配:', matchUrl && matchMethod)
-    
+
     return matchUrl && matchMethod
   })
-  
+
   if (mock && mock.response) {
     console.log('[Mock] 拦截到请求:', fullUrl, method)
     const response = mock.response({ body: data, query: data })
     console.log('[Mock] 返回响应:', response)
     return Promise.resolve(response)
   }
-  
+
   console.warn('[Mock] 未找到匹配的接口:', fullUrl, method)
   return Promise.reject(new Error(`Mock接口未找到: ${method} ${fullUrl}`))
 }
@@ -149,7 +165,7 @@ export const request = {
     }
     return await axiosInstance.get(url, { params })
   },
-  
+
   post: async (url: string, data?: any) => {
     if (enableMock) {
       try {
@@ -161,7 +177,7 @@ export const request = {
     }
     return await axiosInstance.post(url, data)
   },
-  
+
   put: async (url: string, data?: any) => {
     if (enableMock) {
       try {
@@ -173,7 +189,7 @@ export const request = {
     }
     return await axiosInstance.put(url, data)
   },
-  
+
   delete: async (url: string, params?: any) => {
     if (enableMock) {
       try {
@@ -188,4 +204,3 @@ export const request = {
 }
 
 export default axiosInstance
-

@@ -465,40 +465,40 @@ const handleCourseChange = () => {
   assignmentForm.classId = ''
 }
 
-const toApiId = (value: string) => {
-  const numeric = Number(value)
-  return Number.isNaN(numeric) ? value : numeric
+const formatDueDate = (value: string | Date) => {
+  if (!value) return ''
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 19).replace('T', ' ')
+  }
+  return value
 }
 
 const buildAssignmentPayload = () => ({
   title: assignmentForm.title,
-  class_id: toApiId(assignmentForm.classId),
-  question_id: toApiId(assignmentForm.questionId),
-  due_date: assignmentForm.deadline,
-  description: assignmentForm.description,
-  total_score: assignmentForm.totalScore
+  classId: Number(assignmentForm.classId),
+  question_id: String(assignmentForm.questionId),
+  dueDate: formatDueDate(assignmentForm.deadline),
+  description: assignmentForm.description
 })
 
 const saveDraft = async () => {
   if (!formRef.value) return
-  
+
   try {
     await formRef.value.validate()
-    
-    // 调用API创建作业
+
     const response = await createAssignment(buildAssignmentPayload())
-    
-    if ((response.code === 200 || response.code === 201) && response.data) {
+
+    if (response.code === 200 && response.data) {
       ElMessage.success('草稿保存成功')
       createDialogVisible.value = false
-      // 刷新作业列表
       await loadData()
     } else {
-      ElMessage.error('保存失败')
+      ElMessage.error(response.msg || '保存失败')
     }
-  } catch (error) {
-    console.error('保存失败', error)
-    ElMessage.error('保存失败')
+  } catch (error: any) {
+    console.error('[saveDraft] 保存失败:', error)
+    ElMessage.error(error?.response?.data?.detail || error?.message || '保存失败，请检查控制台')
   }
 }
 
@@ -603,10 +603,8 @@ const saveAssignment = async () => {
     } else {
       await saveDraft()
     }
-
-    createDialogVisible.value = false
   } catch (error) {
-    console.error('表单校验失败', error)
+    console.error('表单校验或保存失败', error)
   }
 }
 
@@ -618,13 +616,16 @@ const handlePublishAssignment = (assignment: any) => {
   }).then(async () => {
     try {
       const response = await publishAssignmentApi(String(assignment.id))
-      if (response.code !== 200) {
-        throw new Error(response.message || '发布失败')
+      if (response.code === 200) {
+        assignment.status = 'published'
+        ElMessage.success('作业发布成功')
+        await loadData()
+      } else {
+        ElMessage.error(response.msg || '发布失败')
       }
-      assignment.status = 'published'
-      ElMessage.success('作业发布成功')
-    } catch (e) {
-      ElMessage.error('发布失败')
+    } catch (e: any) {
+      console.error('发布作业失败', e)
+      ElMessage.error(e?.response?.data?.detail || e?.response?.data?.msg || '发布失败')
     }
   })
 }

@@ -23,7 +23,7 @@
         </el-button>
       </div>
     </div>
-    
+
     <div v-if="!isClassPage" class="management-section courses-section">
           <div class="section-header">
             <el-input
@@ -39,7 +39,7 @@
               <el-option label="已结束" value="ended" />
             </el-select>
           </div>
-          
+
           <div class="courses-grid">
             <el-card
               v-for="course in filteredCourses"
@@ -65,7 +65,7 @@
                   </template>
                 </el-dropdown>
               </div>
-              
+
               <div class="course-stats">
                 <div class="stat-item">
                   <el-icon><User /></el-icon>
@@ -80,7 +80,7 @@
                   <span>{{ course.semester }}</span>
                 </div>
               </div>
-              
+
               <div class="course-classes">
                 <span class="classes-label">班级：</span>
                 <el-tag
@@ -95,7 +95,7 @@
                   +{{ course.classes.length - 3 }}
                 </el-tag>
               </div>
-              
+
               <div class="course-footer">
                 <el-tag :type="course.status === 'active' ? 'success' : 'info'" effect="dark" size="small">
                   {{ course.status === 'active' ? '进行中' : '已结束' }}
@@ -107,7 +107,7 @@
             </el-card>
           </div>
     </div>
-    
+
     <div v-else class="management-section classes-section">
           <div class="section-header">
             <el-select v-model="selectedCourseId" placeholder="选择课程" clearable @change="handleCourseSelect">
@@ -130,7 +130,7 @@
               新建班级
             </el-button>
           </div>
-          
+
           <el-card class="classes-table-card">
             <el-table :data="filteredClasses" style="width: 100%">
               <el-table-column prop="name" label="班级名称" width="180" />
@@ -164,7 +164,7 @@
             </el-table>
           </el-card>
     </div>
-    
+
     <el-dialog
       v-model="courseDialogVisible"
       :title="editingCourse ? '编辑课程' : '新建课程'"
@@ -216,7 +216,7 @@
         <el-button type="primary" @click="saveCourse">保存</el-button>
       </template>
     </el-dialog>
-    
+
     <el-dialog
       v-model="classDialogVisible"
       :title="editingClass ? '编辑班级' : '新建班级'"
@@ -251,7 +251,7 @@
         <el-button type="primary" @click="saveClass">保存</el-button>
       </template>
     </el-dialog>
-    
+
     <el-dialog
       v-model="importDialogVisible"
       title="导入学生"
@@ -265,17 +265,17 @@
           :closable="false"
           style="margin-bottom: var(--spacing-lg);"
         >
-          <p>请上传 Excel 文件（.xlsx 格式）或 PDF 文件，文件需包含以下信息：</p>
-          <p>学号、姓名、邮箱、手机号</p>
+          <p>支持上传 CSV、Excel (.xlsx/.xls) 或 PDF 格式文件</p>
+          <p>文件需包含：学号、姓名、邮箱、手机号（可选）、密码（可选）</p>
         </el-alert>
-        
+
         <el-upload
           class="upload-area"
           drag
           action="#"
           :auto-upload="false"
           :limit="1"
-          accept=".xlsx,.xls,.pdf"
+          accept=".csv,.xlsx,.xls,.pdf"
           @change="handleFileChange"
         >
           <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
@@ -284,11 +284,11 @@
           </div>
           <template #tip>
             <div class="el-upload__tip">
-              只能上传 xlsx/xls/pdf 文件，且不超过 5MB
+              支持 CSV、Excel (.xlsx/.xls)、PDF 文件，且不超过 5MB
             </div>
           </template>
         </el-upload>
-        
+
         <div v-if="previewData.length > 0" class="preview-section">
           <h4>数据预览（前5条）</h4>
           <el-table :data="previewData.slice(0, 5)" style="width: 100%">
@@ -302,7 +302,7 @@
       </div>
       <template #footer>
         <el-button @click="importDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmImport" :disabled="previewData.length === 0">
+        <el-button type="primary" @click="confirmImport" :disabled="!selectedImportFile">
           确认导入
         </el-button>
       </template>
@@ -386,19 +386,28 @@ import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { getCourses, createCourse, updateCourse, deleteCourse } from '../../api/course'
 import { getAssignments } from '../../api/assignment'
-import { getClasses, createClass, updateClass, getClassStudents, deleteClass as deleteClassApi, importStudents as importClassStudents, addStudentToClass } from '../../api/class'
-import { getStudents } from '../../api/student'
+import { getClasses, createClass, updateClass, getClassStudents, deleteClass as deleteClassApi, addStudentToClass } from '../../api/class'
+import { getStudents, importStudents as importStudentsApi } from '../../api/student'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { 
-  Plus, 
-  MoreFilled, 
+import {
+  Plus,
+  MoreFilled,
   User,
   Document,
   Calendar,
   UploadFilled
 } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import * as XLSX from 'xlsx'
+import * as pdfjsLib from 'pdfjs-dist'
+
+// ============================================
+// 修复1: PDF.js Worker 路径 - 使用本地 worker 替代 CDN
+// ============================================
+// 方案：从 node_modules 复制 pdf.worker.min.mjs 到 public/ 目录
+// 命令: cp node_modules/pdfjs-dist/build/pdf.worker.min.mjs public/pdf.worker.min.mjs
+pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
 const router = useRouter()
 const route = useRoute()
@@ -426,6 +435,7 @@ const editingClass = ref<any>(null)
 const selectedClass = ref<any>(null)
 const studentSearch = ref('')
 const previewData = ref<any[]>([])
+const selectedImportFile = ref<File | null>(null)
 
 const courseFormRef = ref<FormInstance>()
 const classFormRef = ref<FormInstance>()
@@ -466,7 +476,7 @@ const students = ref<any[]>([])
 
 const filteredCourses = computed(() => {
   let result = courses.value
-  
+
   if (courseSearch.value) {
     const keyword = courseSearch.value.toLowerCase()
     result = result.filter(c => 
@@ -474,32 +484,32 @@ const filteredCourses = computed(() => {
       c.code.toLowerCase().includes(keyword)
     )
   }
-  
+
   if (courseStatusFilter.value) {
     result = result.filter(c => c.status === courseStatusFilter.value)
   }
-  
+
   return result
 })
 
 const filteredClasses = computed(() => {
   let result = classes.value
-  
+
   if (selectedCourseId.value) {
     result = result.filter(c => String(c.courseId) === String(selectedCourseId.value))
   }
-  
+
   if (classSearch.value) {
     const keyword = classSearch.value.toLowerCase()
     result = result.filter(c => c.name.toLowerCase().includes(keyword))
   }
-  
+
   return result
 })
 
 const filteredStudents = computed(() => {
   if (!studentSearch.value) return students.value
-  
+
   const keyword = studentSearch.value.toLowerCase()
   return students.value.filter(s => 
     s.studentId.toLowerCase().includes(keyword) ||
@@ -556,10 +566,10 @@ const handleCourseCommand = (command: any) => {
 
 const saveCourse = async () => {
   if (!courseFormRef.value) return
-  
+
   try {
     await courseFormRef.value.validate()
-    
+
     if (editingCourse.value) {
       try {
         await updateCourse(String(editingCourse.value.id), {
@@ -581,7 +591,7 @@ const saveCourse = async () => {
         semester: courseForm.semester,
         description: courseForm.description
       })
-      
+
       if (response.code === 200 && response.data) {
         ElMessage.success('课程创建成功')
         // 刷新课程列表
@@ -590,7 +600,7 @@ const saveCourse = async () => {
         ElMessage.error('课程创建失败')
       }
     }
-    
+
     courseDialogVisible.value = false
   } catch (error) {
     console.error('课程保存失败', error)
@@ -607,7 +617,7 @@ const loadCourses = async () => {
       getAssignments()
     ])
 
-    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
+    const apiClasses = (coursesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
     const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
 
     // 按 course_id 统计班级数
@@ -729,7 +739,6 @@ const saveClass = async () => {
         await loadCourses()
         classDialogVisible.value = false
       } else {
-  // 如果走到这里，说明后端返回了非 200/201 但拦截器没抛错
         ElMessage.error(response?.message || '班级创建失败')
       }
     }
@@ -806,127 +815,250 @@ const confirmAddStudent = async () => {
   }
 }
 
-const handleFileChange = async (file: any) => {
-  if (file.raw) {
-    const fileName = file.raw.name
-    const isPDF = fileName.endsWith('.pdf')
-    
-    if (isPDF) {
-      ElMessage.info('正在解析PDF文件...')
+const handleFileChange = async (file: any, fileList: any[]) => {
+  console.log('handleFileChange 被调用', { file, fileList })
+
+  // 检查是否是删除文件的操作
+  if (!file.raw) {
+    console.log('文件被删除，清空预览')
+    selectedImportFile.value = null
+    previewData.value = []
+    return
+  }
+
+  selectedImportFile.value = file.raw
+  const fileName = file.raw.name.toLowerCase()
+
+  console.log('开始解析文件:', fileName, '文件大小:', file.raw.size)
+
+  try {
+    if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+      previewData.value = await parseExcelFile(file.raw)
+      console.log('Excel解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else if (fileName.endsWith('.pdf')) {
+      previewData.value = await parsePDFFile(file.raw)
+      console.log('PDF解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else if (fileName.endsWith('.csv')) {
+      previewData.value = await parseCSVFile(file.raw)
+      console.log('CSV解析结果:', previewData.value)
+      ElMessage.success(`解析成功，共 ${previewData.value.length} 条数据`)
+    } else {
+      ElMessage.warning('不支持的文件格式')
+      previewData.value = []
     }
-    
-    try {
-      // 读取文件内容
-      const fileContent = await readFileContent(file.raw)
-      
-      // 解析文件内容
-      if (isPDF) {
-        // PDF文件解析（简单处理）
-        previewData.value = parsePDFFile(fileContent)
-      } else {
-        // Excel文件解析（简单处理）
-        previewData.value = parseExcelFile(fileContent)
-      }
-    } catch (error) {
-      console.error('文件解析失败:', error)
-      ElMessage.error('文件解析失败，请确保文件格式正确')
-    }
+  } catch (error: any) {
+    console.error('文件解析失败:', error)
+    ElMessage.error('文件解析失败: ' + (error.message || '未知错误'))
+    previewData.value = []
   }
 }
 
-const readFileContent = (file: File): Promise<string> => {
+const parseExcelFile = (file: File): Promise<any[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader()
     reader.onload = (e) => {
-      if (typeof e.target?.result === 'string') {
-        resolve(e.target.result)
-      } else {
-        reject(new Error('无法读取文件内容'))
+      try {
+        const data = new Uint8Array(e.target?.result as ArrayBuffer)
+        console.log('Excel读取成功，数据大小:', data.length)
+        const workbook = XLSX.read(data, { type: 'array' })
+        console.log('工作簿名称:', workbook.SheetNames)
+        const firstSheet = workbook.Sheets[workbook.SheetNames[0]]
+        const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][]
+        console.log('Excel原始数据:', jsonData)
+
+        const results: any[] = []
+        for (let i = 1; i < jsonData.length; i++) {
+          const row = jsonData[i]
+          if (row && row.length > 0) {
+            results.push({
+              studentId: String(row[0] || ''),
+              name: String(row[1] || ''),
+              email: String(row[2] || ''),
+              phone: String(row[3] || ''),
+              password: String(row[4] || '')
+            })
+          }
+        }
+        console.log('Excel解析结果:', results)
+        resolve(results)
+      } catch (err) {
+        console.error('Excel解析错误:', err)
+        reject(err)
       }
     }
-    reader.onerror = reject
-    reader.readAsText(file)
+    reader.onerror = (err) => {
+      console.error('FileReader错误:', err)
+      reject(err)
+    }
+    reader.readAsArrayBuffer(file)
   })
 }
 
-const parsePDFFile = (content: string): any[] => {
-  // 简单的PDF文本解析，提取学生信息
-  const students: any[] = []
-  const lines = content.split('\n')
-  
-  for (const line of lines) {
-    const trimmedLine = line.trim()
-    // 匹配学号 姓名 邮箱 手机号格式
-    const match = trimmedLine.match(/(\d{8,12})\s+([\u4e00-\u9fa5]+)\s+([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})\s+(\d{11})/)
-    if (match) {
-      students.push({
-        studentId: match[1],
-        name: match[2],
-        email: match[3],
-        phone: match[4]
-      })
+const parsePDFFile = async (file: File): Promise<any[]> => {
+  try {
+    const arrayBuffer = await file.arrayBuffer()
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+
+    let fullText = ''
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i)
+      const textContent = await page.getTextContent()
+      const pageText = textContent.items.map((item: any) => item.str).join(' ')
+      fullText += pageText + '\n'
     }
+
+    const results: any[] = []
+    const lines = fullText.split(/[\n\r]+/).filter(line => line.trim())
+
+    for (const line of lines) {
+      const parts = line.split(/[\s,;\t]+/).filter(p => p.trim())
+      if (parts.length >= 2) {
+        const hasEmail = parts.some(p => p.includes('@'))
+        if (hasEmail || /^[A-Za-z0-9]+$/.test(parts[0])) {
+          results.push({
+            studentId: parts[0] || '',
+            name: parts[1] || '',
+            email: parts.find(p => p.includes('@')) || '',
+            phone: parts.find(p => /^1[3-9]\d{9}$/.test(p)) || '',
+            password: ''
+          })
+        }
+      }
+    }
+
+    return results
+  } catch (err: any) {
+    console.error('PDF解析错误:', err)
+    throw new Error('PDF解析失败: ' + (err.message || '请检查PDF文件格式'))
   }
-  
-  return students
 }
 
-const parseExcelFile = (content: string): any[] => {
-  // 简单的CSV/Excel解析
-  const students: any[] = []
-  const lines = content.split('\n').filter(line => line.trim())
-  
-  // 跳过表头
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim()
-    if (!line) continue
-    
-    // 支持逗号和制表符分隔
-    const parts = line.split(/[,;\t]/).map(p => p.trim())
-    
-    if (parts.length >= 2) {
-      students.push({
-        studentId: parts[0] || '',
-        name: parts[1] || '',
-        email: parts[2] || '',
-        phone: parts[3] || ''
-      })
+const parseCSVFile = (file: File): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      try {
+        const content = e.target?.result as string
+        console.log('CSV内容:', content.substring(0, 200))
+        const lines = content.split('\n').filter(line => line.trim())
+        console.log('CSV行数:', lines.length)
+
+        const results: any[] = []
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i].trim()
+          if (!line) continue
+
+          const parts = line.split(/[,;\t]/).map(p => p.trim())
+          if (parts.length >= 2) {
+            results.push({
+              studentId: parts[0] || '',
+              name: parts[1] || '',
+              email: parts[2] || '',
+              phone: parts[3] || '',
+              password: parts[4] || ''
+            })
+          }
+        }
+        console.log('CSV解析结果:', results)
+        resolve(results)
+      } catch (err) {
+        console.error('CSV解析错误:', err)
+        reject(err)
+      }
     }
-  }
-  
-  return students
+    reader.onerror = (err) => {
+      console.error('FileReader错误:', err)
+      reject(err)
+    }
+    reader.readAsText(file, 'UTF-8')
+  })
 }
 
+// ============================================
+// 修复2: confirmImport 方法 - 正确处理 axios 直接返回的响应结构
+// ============================================
+// 原问题：importStudentsApi 使用 axiosInstance.post 直接返回 axios 响应，
+// 不是 {code, data, msg} 结构，所以 response.code 是 undefined
+// 修复：统一处理两种可能的响应结构
 const confirmImport = async () => {
-  if (!selectedClass.value || previewData.value.length === 0) {
+  if (!selectedClass.value || !selectedImportFile.value) {
+    ElMessage.warning('请先选择要导入的文件')
     return
   }
-  
+
+  const classId = selectedClass.value.id || selectedClass.value.class_id
+
   try {
-    // 调用后端API导入学生
-    const response = await importClassStudents(selectedClass.value.id, {
-      students: previewData.value.map(s => ({
-        student_id: s.studentId,
-        name: s.name,
-        email: s.email,
-        phone: s.phone
-      }))
-    })
-    
-    if (response.code === 200) {
-      const importedCount = response.data?.count || previewData.value.length
-      selectedClass.value.studentCount += importedCount
-      ElMessage.success(`成功导入 ${importedCount} 名学生`)
-      // 刷新班级列表
-      await loadClasses()
-    } else {
-      ElMessage.error(response.data?.message || '导入失败')
+    ElMessage.info('正在导入学生，请稍候...')
+    const response = await importStudentsApi(classId, selectedImportFile.value)
+
+    // 适配两种响应结构：
+    // 1. request 封装返回: { code, data, msg }
+    // 2. axiosInstance 直接返回: { data: { detail, ... }, status, ... }
+    let resData: any = null
+    let resCode: number = 0
+    let resMsg: string = ''
+
+    if (response && typeof response.code === 'number') {
+      // 结构1: 经过 request 封装
+      resCode = response.code
+      resData = response.data
+      resMsg = response.msg || ''
+    } else if (response && response.data) {
+      // 结构2: axios 原始响应 或 后端直接返回的对象
+      // 可能是 { data: { detail: "..." } } 或 { detail: "..." }
+      const data = response.data
+      if (typeof data.code === 'number') {
+        resCode = data.code
+        resData = data.data
+        resMsg = data.msg || data.message || ''
+      } else {
+        // 后端直接返回业务数据（如 { detail: "..." }）
+        resData = data
+        resCode = 200  // 假设成功，后面根据 detail 判断
+      }
     }
-  } catch (error) {
+
+    // 检查后端是否返回了错误详情（如 "只支持CSV或Excel文件"）
+    if (resData && resData.detail) {
+      ElMessage.error(resData.detail)
+      return
+    }
+
+    if (resCode === 200 || resCode === 201) {
+      const data = resData || {}
+      const successCount = data.success_count || 0
+      const failCount = data.fail_count || 0
+      const failReasons = data.fail_reasons || []
+
+      if (successCount > 0) {
+        ElMessage.success(`成功导入 ${successCount} 名学生`)
+      }
+      if (failCount > 0) {
+        ElMessage.warning(`${failCount} 名学生导入失败`)
+        failReasons.forEach((reason: string) => {
+          console.warn('导入失败详情:', reason)
+        })
+      }
+      if (successCount === 0 && failCount === 0) {
+        ElMessage.success('导入完成')
+      }
+
+      await loadClasses()
+      importDialogVisible.value = false
+      selectedImportFile.value = null
+      previewData.value = []
+    } else {
+      ElMessage.error(resMsg || '导入失败')
+    }
+  } catch (error: any) {
     console.error('导入学生失败:', error)
-    ElMessage.error('导入失败，请检查网络连接')
-  } finally {
-    importDialogVisible.value = false
+    // 捕获 axios 错误响应
+    const detail = error?.response?.data?.detail
+    const message = error?.response?.data?.msg || error?.response?.data?.message
+    ElMessage.error(detail || message || error?.message || '导入失败，请检查网络连接')
   }
 }
 
@@ -1030,7 +1162,7 @@ const handleLogout = () => {
 .logout-btn {
   background-color: var(--danger-color);
   border-color: var(--danger-color);
-  
+
   &:hover {
     background-color: var(--danger-light);
     border-color: var(--danger-light);
@@ -1210,20 +1342,20 @@ const handleLogout = () => {
   .course-management-container {
     padding: var(--spacing-md);
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: var(--spacing-md);
   }
-  
+
   .section-header {
     flex-wrap: wrap;
   }
-  
+
   .search-input {
     width: 100%;
   }
-  
+
   .courses-grid {
     grid-template-columns: 1fr;
   }
