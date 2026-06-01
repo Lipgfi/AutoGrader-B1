@@ -152,6 +152,61 @@
           </el-col>
         </el-row>
         
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="密码状态">
+              <el-tag :type="userInfo.firstPasswordChanged ? 'success' : 'warning'">
+                {{ userInfo.firstPasswordChanged ? '已修改初始密码' : '未修改初始密码' }}
+              </el-tag>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="用户ID">
+              <el-input
+                v-model="userInfo.userId"
+                disabled
+              >
+                <template #suffix>
+                  <el-tooltip content="用户ID不可修改" placement="top">
+                    <el-icon class="disabled-icon"><Lock /></el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
+        <el-row :gutter="24">
+          <el-col :span="12">
+            <el-form-item label="创建时间">
+              <el-input
+                v-model="userInfo.createdAt"
+                disabled
+              >
+                <template #suffix>
+                  <el-tooltip content="创建时间不可修改" placement="top">
+                    <el-icon class="disabled-icon"><Lock /></el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="最后登录">
+              <el-input
+                v-model="userInfo.lastLoginAt"
+                disabled
+              >
+                <template #suffix>
+                  <el-tooltip content="最后登录时间" placement="top">
+                    <el-icon class="disabled-icon"><Lock /></el-icon>
+                  </el-tooltip>
+                </template>
+              </el-input>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        
         <el-form-item label="个人简介" prop="bio">
           <el-input
             v-model="editForm.bio"
@@ -284,17 +339,21 @@ const passwordLoading = ref(false)
 
 const userInfo = reactive({
   studentId: userStore.userInfo?.studentId || userStore.userInfo?.student_id || '',
+  userId: userStore.userInfo?.userId || userStore.userInfo?.user_id || '',
   name: userStore.userInfo?.realName || userStore.userInfo?.real_name || userStore.userInfo?.name || '',
-  gender: 'male',
-  birthday: '',
+  gender: userStore.userInfo?.gender || 'male',
+  birthday: userStore.userInfo?.birthday || '',
   email: userStore.userInfo?.email || '',
   phone: userStore.userInfo?.phone || '',
   department: userStore.userInfo?.department || '',
   className: userStore.userInfo?.className || '',
-  bio: '',
-  avatar: '',
+  bio: userStore.userInfo?.bio || '',
+  avatar: userStore.userInfo?.avatar || userStore.userInfo?.avatar_url || '',
   role: userStore.userInfo?.role || '',
-  status: 'active'
+  status: userStore.userInfo?.status || userStore.userInfo?.is_active ? 'active' : 'inactive',
+  firstPasswordChanged: userStore.userInfo?.firstPasswordChanged || userStore.userInfo?.first_password_changed || false,
+  createdAt: userStore.userInfo?.createdAt || userStore.userInfo?.created_at || '',
+  lastLoginAt: userStore.userInfo?.lastLoginAt || userStore.userInfo?.last_login_at || ''
 })
 
 const editForm = reactive({

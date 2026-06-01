@@ -7,10 +7,6 @@
           <el-icon><Plus /></el-icon>
           新增题目
         </el-button>
-        <el-button @click="handleImport">
-          <el-icon><Upload /></el-icon>
-          批量导入
-        </el-button>
         <el-button @click="handleExport">
           <el-icon><Download /></el-icon>
           导出题库
@@ -69,7 +65,6 @@
             <el-form-item label="题目类型">
               <el-select v-model="filterForm.questionType" placeholder="全部类型" clearable>
                 <el-option label="编程题" :value="1" />
-                <el-option label="选择题" :value="2" />
                 <el-option label="填空题" :value="3" />
               </el-select>
             </el-form-item>
@@ -206,7 +201,6 @@
             <el-form-item label="题目类型" prop="questionType">
               <el-select v-model="questionForm.questionType" placeholder="请选择题目类型">
                 <el-option label="编程题" :value="1" />
-                <el-option label="选择题" :value="2" />
                 <el-option label="填空题" :value="3" />
               </el-select>
             </el-form-item>
@@ -242,9 +236,8 @@
           <el-form-item label="编程语言" prop="language">
             <el-select v-model="questionForm.language" placeholder="请选择编程语言">
               <el-option label="Python" value="python" />
-              <el-option label="Java" value="java" />
-              <el-option label="C++" value="cpp" />
               <el-option label="C" value="c" />
+              <el-option label="Shell" value="shell" />
             </el-select>
           </el-form-item>
           
@@ -275,34 +268,6 @@
               <el-button type="primary" link @click="addTestCase">
                 <el-icon><Plus /></el-icon>
                 添加测试用例
-              </el-button>
-            </div>
-          </el-form-item>
-        </template>
-        
-        <!-- 选择题特有字段 -->
-        <template v-if="questionForm.questionType === 2">
-          <el-form-item label="选项">
-            <div class="options-list">
-              <div
-                v-for="(option, index) in questionForm.options"
-                :key="index"
-                class="option-item"
-              >
-                <el-radio
-                  v-model="questionForm.correctOption"
-                  :label="index"
-                >
-                  {{ String.fromCharCode(65 + index) }}
-                </el-radio>
-                <el-input v-model="option.content" placeholder="选项内容" />
-                <el-button type="danger" link @click="removeOption(index)">
-                  删除
-                </el-button>
-              </div>
-              <el-button type="primary" link @click="addOption">
-                <el-icon><Plus /></el-icon>
-                添加选项
               </el-button>
             </div>
           </el-form-item>
@@ -526,13 +491,6 @@ const questionForm = reactive({
   timeLimit: 5,
   memoryLimit: 256,
   testCases: [{ input: '', expectedOutput: '' }],
-  options: [
-    { content: '' },
-    { content: '' },
-    { content: '' },
-    { content: '' }
-  ],
-  correctOption: 0,
   fillBlanks: [{ answer: '' }]
 })
 
@@ -551,14 +509,13 @@ const categoryForm = reactive({
 })
 
 const getQuestionTypeName = (type: number): string => {
-  const types: Record<number, string> = { 1: '编程题', 2: '选择题', 3: '填空题' }
+  const types: Record<number, string> = { 1: '编程题', 3: '填空题' }
   return types[type] || '未知'
 }
 
 const getQuestionTypeTag = (type: number): 'primary' | 'success' | 'warning' => {
   const tags: Record<number, 'primary' | 'success' | 'warning'> = {
     1: 'primary',
-    2: 'success',
     3: 'warning'
   }
   return tags[type] || 'primary'
@@ -615,10 +572,6 @@ const editQuestion = (row: any) => {
           expectedOutput: tc.expected_output || tc.expectedOutput || '',
         }))
       : [{ input: '', expectedOutput: '' }],
-    options: [
-      { content: '' }, { content: '' }, { content: '' }, { content: '' }
-    ],
-    correctOption: 0,
     fillBlanks: [{ answer: '' }],
   })
   questionDialogVisible.value = true
@@ -704,14 +657,6 @@ const addTestCase = () => {
 
 const removeTestCase = (index: number) => {
   questionForm.testCases.splice(index, 1)
-}
-
-const addOption = () => {
-  questionForm.options.push({ content: '' })
-}
-
-const removeOption = (index: number) => {
-  questionForm.options.splice(index, 1)
 }
 
 const addBlank = () => {
@@ -883,10 +828,6 @@ const handleAddCategory = () => {
 const saveCategory = () => {
   ElMessage.success('分类添加成功')
   categoryDialogVisible.value = false
-}
-
-const handleImport = () => {
-  ElMessage.info('批量导入功能开发中')
 }
 
 const handleExport = () => {

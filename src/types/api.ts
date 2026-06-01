@@ -20,15 +20,19 @@ export interface UserRegisterRequest {
 }
 
 export interface UserInfo {
-  id: string
+  user_id: number
   username: string
   real_name: string
-  role: string
+  role: 'student' | 'teacher' | 'admin'
   email: string
-  phone?: string
-  department?: string
+  phone?: string | null
+  avatar_url?: string | null
+  is_active?: boolean
+  created_at?: string
+  last_login_at?: string | null
   student_id?: string
   teacher_id?: string
+  department?: string | null
 }
 
 // 课程相关
@@ -40,9 +44,22 @@ export interface CourseCreateRequest {
 }
 
 export interface Course {
-  id: string
+  course_id: number
+  course_code: string
+  course_name: string
+  teacher_id: number
+  semester: string
+  description?: string | null
+  created_at?: string
+}
+
+export interface CourseResponse {
+  id: number
+  course_id: number
   name: string
+  course_name: string
   code: string
+  course_code: string
   semester: string
   description?: string
   color?: string
@@ -60,14 +77,25 @@ export interface ClassCreateRequest {
 }
 
 export interface Class {
-  id: string
+  class_id: number
+  course_id: number
+  class_name: string
+  class_code: string
+  teacher_id: number
+  created_at?: string
+}
+
+export interface ClassResponse {
+  id: number
+  class_id: number
   name: string
-  courseId: string
-  classId?: number
-  class_name?: string
-  class_code?: string
-  course_id?: number
+  class_name: string
+  class_code: string
+  course_id: number
   course_name?: string
+  teacher_id?: number
+  studentCount?: number
+  student_count?: number
 }
 
 // 作业相关
@@ -81,15 +109,34 @@ export interface AssignmentCreateRequest {
 }
 
 export interface Assignment {
-  id: string
+  assignment_id: number
   title: string
-  courseId: string
+  description?: string | null
+  class_id: number
+  teacher_id: number
+  due_date: string
+  is_published?: boolean
+  allow_resubmit?: boolean
+  created_at?: string
+  published_at?: string | null
+  question_id: string
+}
+
+export interface AssignmentResponse {
+  id: number
+  assignment_id: number
+  title: string
+  courseId?: string
   courseName?: string
-  classId: string
+  classId?: number
+  class_id?: number
   className?: string
-  questionId: string
+  questionId?: string
+  question_id?: string
   questionTitle?: string
-  deadline: string
+  due_date?: string
+  dueDate?: string
+  deadline?: string
   description?: string
   status?: string
   submitRate?: number
@@ -116,18 +163,43 @@ export interface QuestionCreateRequest {
   fillBlanks?: FillBlank[]
 }
 
+export type QuestionType = 'COMMAND_LINE' | 'FILE_IO' | 'INTERFACE'
+export type QuestionDifficulty = 'EASY' | 'MEDIUM' | 'HARD'
+
 export interface Question {
-  id: string
+  question_id: string
   title: string
-  content: string
+  description?: string | null
+  type: QuestionType
+  difficulty: QuestionDifficulty
+  language: string
+  time_limit?: number | null
+  memory_limit?: number | null
+  starter_code?: string | null
+  solution_code?: string | null
+  is_active?: boolean
+  created_at?: string
+  created_by?: number | null
+}
+
+export interface QuestionResponse {
+  id: string
+  question_id: string
+  title: string
+  content?: string
+  description?: string
   difficulty: number
-  score: number
+  score?: number
   status?: number
   tags?: string[]
   answer?: string
   languages?: string[]
+  language?: string
   useCount?: number
   createTime?: string
+  type?: QuestionType
+  time_limit?: number
+  memory_limit?: number
 }
 
 export interface TestCase {
@@ -153,10 +225,48 @@ export interface SubmissionCreateRequest {
 }
 
 export interface Submission {
-  id: string
-  questionId: string
+  submission_id: string
+  student_user_id: number
+  question_id: string
+  assignment_id: number
   code: string
   language: string
+  submitted_at?: string
+  status?: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'ERROR'
+  overall_score?: number
+  passed_count?: number
+  total_count?: number
+  overall_comment?: string
+  static_issues?: StaticIssue[]
+  case_results?: CaseResult[]
+  teacher_score_override?: number | null
+  override_reason?: string | null
+}
+
+export interface StaticIssue {
+  level: 'error' | 'warning' | 'info'
+  message: string
+  code?: string
+}
+
+export interface CaseResult {
+  passed: boolean
+  case_id: string
+  description?: string
+  actual_output?: string | null
+  expected_output?: string | null
+  score?: number
+  error?: string
+  execution_time_ms?: number
+}
+
+export interface SubmissionResponse {
+  id: string
+  submission_id?: string
+  questionId?: string
+  question_id?: string
+  code?: string
+  language?: string
   status?: string
   score?: number
   passed?: boolean
@@ -167,6 +277,7 @@ export interface Submission {
   ranking?: number
   testCases?: TestCase[]
   submitTime?: string
+  submitted_at?: string
 }
 
 // 成绩相关

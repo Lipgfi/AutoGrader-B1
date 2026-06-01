@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="coding-container">
     <div class="coding-header">
       <div class="header-left">
@@ -15,28 +15,22 @@
       </div>
       <div class="header-right">
         <el-select v-model="selectedLanguage" placeholder="选择语言" class="language-select" @change="handleLanguageChange">
-          <el-option label="Python" value="python">
+          <el-option :label="'Python'" value="python">
             <span class="language-option">
               <span class="lang-icon">Python</span>
               Python
             </span>
           </el-option>
-          <el-option label="Java" value="java">
+          <el-option :label="'C'" value="c">
             <span class="language-option">
-              <span class="lang-icon">Java</span>
-              Java
+              <span class="lang-icon">C</span>
+              C
             </span>
           </el-option>
-          <el-option label="C++" value="cpp">
+          <el-option :label="'Shell'" value="shell">
             <span class="language-option">
-              <span class="lang-icon">C++</span>
-              C++
-            </span>
-          </el-option>
-          <el-option label="JavaScript" value="javascript">
-            <span class="language-option">
-              <span class="lang-icon">JS</span>
-              JavaScript
+              <span class="lang-icon">SH</span>
+              Shell
             </span>
           </el-option>
         </el-select>

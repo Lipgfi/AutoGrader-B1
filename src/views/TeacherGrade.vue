@@ -37,9 +37,8 @@
           <div class="code-header-right">
             <el-select v-model="codeLanguage" size="small" class="language-select">
               <el-option label="Python" value="python" />
-              <el-option label="Java" value="java" />
-              <el-option label="C++" value="cpp" />
-              <el-option label="JavaScript" value="javascript" />
+              <el-option label="C" value="c" />
+              <el-option label="Shell" value="shell" />
             </el-select>
             <el-button-group class="code-actions">
               <el-button size="small" @click="copyCode">
