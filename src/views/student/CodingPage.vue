@@ -45,8 +45,8 @@
       <div class="problem-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-tabs">
           <el-radio-group v-model="problemTab" size="small">
-            <el-radio-button label="description">题目描述</el-radio-button>
-            <el-radio-button label="testcases">测试用例</el-radio-button>
+            <el-radio-button value="description">题目描述</el-radio-button>
+            <el-radio-button value="testcases">测试用例</el-radio-button>
           </el-radio-group>
         </div>
         
@@ -108,7 +108,7 @@
             <div class="testcases-panel">
               <div class="testcase-tabs">
                 <el-radio-group v-model="selectedTestcase" size="small">
-                  <el-radio-button v-for="tc in testcases" :key="tc.id" :label="tc.id">
+                  <el-radio-button v-for="tc in testcases" :key="tc.id" :value="tc.id">
                     用例 {{ tc.id }}
                   </el-radio-button>
                 </el-radio-group>

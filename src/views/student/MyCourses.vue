@@ -39,13 +39,13 @@
       
       <div class="view-toggle">
         <el-radio-group v-model="viewMode" size="small">
-          <el-radio-button label="card">
-            <el-icon><Grid /></el-icon>
-          </el-radio-button>
-          <el-radio-button label="list">
-            <el-icon><List /></el-icon>
-          </el-radio-button>
-        </el-radio-group>
+            <el-radio-button value="card">
+              <el-icon><Grid /></el-icon>
+            </el-radio-button>
+            <el-radio-button value="list">
+              <el-icon><List /></el-icon>
+            </el-radio-button>
+          </el-radio-group>
       </div>
     </div>
     

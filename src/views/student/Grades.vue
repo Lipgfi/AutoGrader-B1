@@ -298,16 +298,17 @@ const loadGrades = async () => {
     // 课程映射
     const courseMap: Record<number, string> = {}
     if (coursesRes.code === 200 && coursesRes.data) {
+      courses.value = coursesRes.data || [] // 修复：赋值课程数据供下拉框使用
       for (const c of (coursesRes.data || [])) {
         courseMap[c.course_id || c.id] = c.course_name || c.name
       }
     }
 
     // 作业映射
-    const asgnMap: Record<number, any> = {}
+    const asgnMap: Record<string, any> = {}
     if (assignmentsRes.code === 200 && assignmentsRes.data) {
       for (const a of (assignmentsRes.data || [])) {
-        asgnMap[a.assignment_id || a.id] = a
+        asgnMap[String(a.assignment_id || a.id)] = a
       }
     }
 
@@ -315,9 +316,9 @@ const loadGrades = async () => {
     if (submissionsRes.code === 200 && submissionsRes.data) {
       const list = submissionsRes.data || []
       // 按作业取最高分
-      const bestByAsgn: Record<number, any> = {}
+      const bestByAsgn: Record<string, any> = {}
       for (const s of list) {
-        const aid = s.assignment_id
+        const aid = String(s.assignment_id)
         const score = s.overall_score ?? s.score ?? 0
         if (!bestByAsgn[aid] || score > (bestByAsgn[aid].overall_score ?? 0)) {
           bestByAsgn[aid] = s
@@ -325,26 +326,41 @@ const loadGrades = async () => {
       }
 
       grades.value = Object.values(bestByAsgn).map((s: any) => {
-        const asgn = asgnMap[s.assignment_id]
+        const aid = String(s.assignment_id)
+        const asgn = asgnMap[aid]
+        const score = s.overall_score ?? s.score ?? 0
+        const passedCount = s.passed_count || 0
+        const totalCount = s.total_count || 0
+        let status = 'pending'
+        
+        // 根据得分判断状态，60分及以上为通过
+        if (score > 0) {
+          if (score >= 60) {
+            status = 'completed'
+          } else if (passedCount > 0 && passedCount < totalCount) {
+            status = 'partial'
+          } else {
+            status = 'failed'
+          }
+        }
+        
         return {
           id: s.submission_id || s.id,
-          courseId: asgn ? (asgn.course_id || asgn.class_id) : '',
+          courseId: asgn ? String(asgn.course_id || asgn.class_id) : '',
           courseName: asgn ? (courseMap[asgn.course_id] || asgn.class_name || '') : (s.assignment_title || ''),
           assignmentId: s.assignment_id,
           assignmentName: s.assignment_title || asgn?.title || '',
           questionId: s.question_id,
-          score: s.overall_score ?? s.score ?? 0,
+          score: score,
           totalScore: 100,
-          status: s.status === 'COMPLETED'
-            ? ((s.passed_count || 0) >= (s.total_count || 1) ? 'completed' : (s.passed_count || 0) > 0 ? 'partial' : 'failed')
-            : 'pending',
+          status: status,
           language: s.language || '',
           submitTime: s.submitted_at || s.submitTime || '',
-          passedCount: s.passed_count || 0,
-          totalCount: s.total_count || 0,
-          passRate: s.total_count > 0 ? Math.round((s.passed_count || 0) / s.total_count * 100) : null,
-          passedCases: s.passed_count || 0,
-          totalCases: s.total_count || 0
+          passedCount: passedCount,
+          totalCount: totalCount,
+          passRate: totalCount > 0 ? Math.round(passedCount / totalCount * 100) : null,
+          passedCases: passedCount,
+          totalCases: totalCount
         }
       })
 
@@ -366,7 +382,7 @@ const filteredGrades = computed(() => {
   let result = grades.value
   
   if (filterCourse.value) {
-    result = result.filter(g => g.courseId === filterCourse.value)
+    result = result.filter(g => String(g.courseId) === String(filterCourse.value))
   }
   
   if (filterStatus.value) {

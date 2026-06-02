@@ -125,9 +125,9 @@
         <div class="card-header">
           <span>成绩分布</span>
           <el-radio-group v-model="chartType" size="small">
-            <el-radio-button label="bar">柱状图</el-radio-button>
-            <el-radio-button label="pie">饼图</el-radio-button>
-          </el-radio-group>
+                <el-radio-button value="bar">柱状图</el-radio-button>
+                <el-radio-button value="pie">饼图</el-radio-button>
+              </el-radio-group>
         </div>
       </template>
       <div class="chart-container">

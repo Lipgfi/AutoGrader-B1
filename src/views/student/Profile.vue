@@ -84,8 +84,8 @@
           <el-col :span="12">
             <el-form-item label="性别" prop="gender">
               <el-radio-group v-model="editForm.gender" :disabled="!isEditing">
-                <el-radio label="male">男</el-radio>
-                <el-radio label="female">女</el-radio>
+                <el-radio value="male">男</el-radio>
+                <el-radio value="female">女</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>

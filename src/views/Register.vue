@@ -32,15 +32,15 @@
         <div class="role-tabs">
           <div class="role-label">选择身份</div>
           <el-radio-group v-model="registerForm.role" class="role-group">
-            <el-radio-button label="student">
+            <el-radio-button value="student">
               <el-icon><User /></el-icon>
               <span>学生</span>
             </el-radio-button>
-            <el-radio-button label="teacher">
+            <el-radio-button value="teacher">
               <el-icon><Reading /></el-icon>
               <span>教师</span>
             </el-radio-button>
-            <el-radio-button label="admin">
+            <el-radio-button value="admin">
               <el-icon><Setting /></el-icon>
               <span>管理员</span>
             </el-radio-button>
@@ -185,7 +185,7 @@
         
         <div class="login-link">
           <span class="login-text">已有账号？</span>
-          <el-link type="primary" :underline="false" @click="$router.push('/login')">
+          <el-link type="primary" underline="never" @click="$router.push('/login')">
             立即登录
           </el-link>
         </div>

@@ -102,8 +102,8 @@
             <div class="card-header">
               <span>提交趋势</span>
               <el-radio-group v-model="chartPeriod" size="small">
-                <el-radio-button label="week">近一周</el-radio-button>
-                <el-radio-button label="month">近一月</el-radio-button>
+                <el-radio-button value="week">近一周</el-radio-button>
+                <el-radio-button value="month">近一月</el-radio-button>
               </el-radio-group>
             </div>
           </template>
