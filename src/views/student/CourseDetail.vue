@@ -237,12 +237,12 @@ const loadData = async () => {
     }
 
     // 加载学生提交记录，判断作业完成状态
-    let submissionsByAsgn: Record<number, any> = {}
+    let submissionsByAsgn: Record<string, any> = {}
     try {
       const subRes = await request.get('/submissions/my')
       if (subRes.code === 200 && subRes.data) {
         for (const s of (subRes.data || [])) {
-          const aid = s.assignment_id
+          const aid = String(s.assignment_id)
           const score = s.overall_score ?? 0
           const prevScore = submissionsByAsgn[aid]?.overall_score ?? -1
           if (score >= prevScore) {
@@ -255,11 +255,12 @@ const loadData = async () => {
     // 作业列表 — 仅显示当前课程班级的作业
     const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
     assignments.value = apiAssignments
-      .filter((a: any) => !classId || (a.class_id || a.classId) === classId)
+      .filter((a: any) => !classId || String(a.class_id || a.classId) === String(classId))
       .map((a: any) => {
       const dueDate = new Date(a.due_date || a.dueDate || a.deadline)
       const isExpired = dueDate < new Date()
-      const sub = submissionsByAsgn[a.assignment_id || a.id]
+      const aid = String(a.assignment_id || a.id)
+      const sub = submissionsByAsgn[aid]
       const isCompleted = sub && sub.status === 'COMPLETED'
       return {
         id: a.assignment_id || a.id,
