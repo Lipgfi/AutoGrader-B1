@@ -1,33 +1,5 @@
 <template>
   <div class="profile-container">
-    <div class="profile-header">
-      <div class="avatar-section">
-        <el-avatar :size="100" :src="userInfo.avatar" class="user-avatar">
-          <el-icon :size="40"><User /></el-icon>
-        </el-avatar>
-        <el-upload
-          class="avatar-upload"
-          action="#"
-          :show-file-list="false"
-          :before-upload="beforeAvatarUpload"
-        >
-          <el-button size="small" type="primary" plain>
-            <el-icon><Upload /></el-icon>
-            更换头像
-          </el-button>
-        </el-upload>
-      </div>
-      <div class="user-info-header">
-        <h1>{{ userInfo.name }}</h1>
-        <p class="user-role">
-          <el-tag type="primary" effect="dark">{{ userInfo.role }}</el-tag>
-          <el-tag :type="userInfo.status === 'active' ? 'success' : 'danger'" effect="plain">
-            {{ userInfo.status === 'active' ? '正常' : '已停用' }}
-          </el-tag>
-        </p>
-      </div>
-    </div>
-    
     <el-card class="info-card">
       <template #header>
         <div class="card-header">
@@ -272,14 +244,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { 
-  User, 
-  Upload, 
   Edit, 
   Lock 
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
 import { getCurrentUser, updateCurrentUser } from '../../api/user'
-import type { UploadProps, FormInstance, FormRules } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
 
 const userStore = useUserStore()
 const formRef = ref<FormInstance>()
@@ -298,7 +268,6 @@ const userInfo = reactive({
   department: userStore.userInfo?.department || '',
   className: userStore.userInfo?.className || '',
   bio: userStore.userInfo?.bio || '',
-  avatar: userStore.userInfo?.avatar || userStore.userInfo?.avatar_url || '',
   role: userStore.userInfo?.role || '',
   status: userStore.userInfo?.status || userStore.userInfo?.is_active ? 'active' : 'inactive',
   firstPasswordChanged: userStore.userInfo?.firstPasswordChanged || userStore.userInfo?.first_password_changed || false,
@@ -356,25 +325,6 @@ const passwordRules: FormRules = {
       trigger: 'blur'
     }
   ]
-}
-
-const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
-  if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
-    ElMessage.error('头像图片只能是 JPG/PNG 格式!')
-    return false
-  }
-  if (rawFile.size / 1024 / 1024 > 2) {
-    ElMessage.error('头像图片大小不能超过 2MB!')
-    return false
-  }
-  
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    userInfo.avatar = e.target?.result as string
-    ElMessage.success('头像上传成功')
-  }
-  reader.readAsDataURL(rawFile)
-  return false
 }
 
 const startEdit = () => {
@@ -456,7 +406,6 @@ const loadUserInfo = async () => {
       userInfo.name = data.real_name || data.realName || data.name || ''
       userInfo.email = data.email || ''
       userInfo.phone = data.phone || ''
-      userInfo.avatar = data.avatar_url || data.avatar || ''
       userInfo.role = data.role || ''
       userInfo.status = data.is_active ? 'active' : 'inactive'
       userInfo.createdAt = data.created_at || data.createdAt || ''
@@ -485,41 +434,6 @@ onMounted(() => {
   padding: var(--spacing-xl);
   max-width: 1000px;
   margin: 0 auto;
-}
-
-.profile-header {
-  display: flex;
-  gap: var(--spacing-xl);
-  margin-bottom: var(--spacing-xl);
-  padding: var(--spacing-xl);
-  background-color: var(--bg-primary);
-  border-radius: var(--border-radius-lg);
-  box-shadow: var(--shadow-light);
-}
-
-.avatar-section {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.user-avatar {
-  border: 4px solid var(--primary-color);
-  box-shadow: var(--shadow-light);
-}
-
-.user-info-header h1 {
-  font-size: var(--font-size-xxl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-sm) 0;
-}
-
-.user-role {
-  display: flex;
-  gap: var(--spacing-sm);
-  margin: 0;
 }
 
 .info-card,
@@ -556,16 +470,6 @@ onMounted(() => {
 @media (max-width: 768px) {
   .profile-container {
     padding: var(--spacing-md);
-  }
-  
-  .profile-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-  }
-  
-  .user-info-header h1 {
-    font-size: var(--font-size-xl);
   }
 }
 </style>

@@ -632,15 +632,23 @@ const loadCourses = async () => {
       }
     }
 
+    // 优化：先建立 class_id -> course_id 的映射，将时间复杂度从 O(n*m) 降为 O(n+m)
+    const classIdToCourseId = new Map<string, string>()
+    for (const cls of apiClasses) {
+      const classId = String(cls.class_id || cls.id)
+      const courseId = String(cls.course_id || cls.courseId)
+      if (classId && courseId) {
+        classIdToCourseId.set(classId, courseId)
+      }
+    }
+
     // 按 course_id 统计作业数（通过 class_id → course_id 关联）
     const assignmentCountByCourse: Record<string, number> = {}
     for (const a of apiAssignments) {
-      const cls = apiClasses.find((c: any) => String(c.class_id || c.id) === String(a.class_id || a.classId))
-      if (cls) {
-        const cid = String(cls.course_id || cls.courseId || '')
-        if (cid) {
-          assignmentCountByCourse[cid] = (assignmentCountByCourse[cid] || 0) + 1
-        }
+      const classId = String(a.class_id || a.classId)
+      const cid = classIdToCourseId.get(classId)
+      if (cid) {
+        assignmentCountByCourse[cid] = (assignmentCountByCourse[cid] || 0) + 1
       }
     }
 
@@ -1062,6 +1070,9 @@ const confirmImport = async () => {
   }
 }
 
+// 限制并发请求数量，避免大量请求导致超时
+const concurrentRequestLimit = 5
+
 const loadClasses = async () => {
   try {
     const response = await getClasses()
@@ -1077,15 +1088,24 @@ const loadClasses = async () => {
         createTime: cls.create_time || ''
       }))
 
-      // 异步加载每个班级的学生数
-      await Promise.all(list.map(async (c: any) => {
-        try {
-          const sRes = await getClassStudents(String(c.id))
-          if (sRes.code === 200 && sRes.data) {
-            c.studentCount = (sRes.data || []).length
+      // 优化：限制并发请求数量，避免大量请求导致超时
+      const chunks: any[][] = []
+      for (let i = 0; i < list.length; i += concurrentRequestLimit) {
+        chunks.push(list.slice(i, i + concurrentRequestLimit))
+      }
+
+      for (const chunk of chunks) {
+        await Promise.all(chunk.map(async (c: any) => {
+          try {
+            const sRes = await getClassStudents(String(c.id))
+            if (sRes.code === 200 && sRes.data) {
+              c.studentCount = (sRes.data || []).length
+            }
+          } catch (e) { 
+            console.warn('加载班级学生数失败:', c.id, e)
           }
-        } catch (e) { /* ignore */ }
-      }))
+        }))
+      }
 
       classes.value = list
     }
