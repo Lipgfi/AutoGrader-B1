@@ -7,7 +7,6 @@
       </div>
       <div class="header-right">
         <el-upload
-          v-if="canPerformAction('import')"
           class="upload-btn"
           action="#"
           :auto-upload="false"
@@ -19,22 +18,7 @@
             批量导入
           </el-button>
         </el-upload>
-        <el-button 
-          v-if="canPerformAction('export')"
-          type="success" 
-          @click="exportStudents"
-        >
-          <el-icon><Download /></el-icon>
-          导出学生
-        </el-button>
-        <el-button 
-          v-if="canPerformAction('add')"
-          type="warning" 
-          @click="addStudent"
-        >
-          <el-icon><Plus /></el-icon>
-          添加学生
-        </el-button>
+
       </div>
     </div>
     
@@ -57,11 +41,9 @@
     
     <el-card class="students-card">
       <el-table :data="filteredStudents" style="width: 100%">
-        <el-table-column prop="id" label="学号" width="120" />
+        <el-table-column prop="studentId" label="学号" width="120" />
         <el-table-column prop="name" label="姓名" width="100" />
-        <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="email" label="邮箱" min-width="180" />
-        <el-table-column prop="phone" label="手机号" width="120" />
         <el-table-column prop="status" label="状态" width="100" align="center">
           <template #default="scope">
             <el-tag :type="scope.row.status === 'active' ? 'success' : 'danger'" effect="dark" size="small">
@@ -69,34 +51,15 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column label="操作" width="100" fixed="right">
           <template #default="scope">
             <el-button 
-              v-if="canEditStudent(scope.row)"
-              type="primary" 
-              link 
-              size="small" 
-              @click="editStudent(scope.row)"
-            >
-              编辑
-            </el-button>
-            <el-button 
-              v-if="canEditStudent(scope.row)"
               :type="scope.row.status === 'active' ? 'danger' : 'success'" 
               link 
               size="small" 
               @click="toggleStatus(scope.row)"
             >
               {{ scope.row.status === 'active' ? '禁用' : '激活' }}
-            </el-button>
-            <el-button 
-              v-if="canPerformAction('delete')"
-              type="danger" 
-              link 
-              size="small" 
-              @click="handleDeleteStudent(scope.row)"
-            >
-              删除
             </el-button>
           </template>
         </el-table-column>
@@ -159,39 +122,7 @@
       </template>
     </el-dialog>
     
-    <!-- 添加/编辑学生弹窗 -->
-    <el-dialog
-      v-model="studentDialogVisible"
-      :title="isEdit ? '编辑学生' : '添加学生'"
-      width="500px"
-      :close-on-click-modal="false"
-    >
-      <el-form :model="form" label-width="80px">
-        <el-form-item label="学号">
-          <el-input v-model="form.id" :disabled="isEdit" />
-        </el-form-item>
-        <el-form-item label="姓名">
-          <el-input v-model="form.name" />
-        </el-form-item>
-        <el-form-item label="用户名">
-          <el-input v-model="form.username" :disabled="isEdit" />
-        </el-form-item>
-        <el-form-item label="邮箱">
-          <el-input v-model="form.email" type="email" />
-        </el-form-item>
-        <el-form-item label="手机号">
-          <el-input v-model="form.phone" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-switch v-model="form.status" active-value="active" inactive-value="inactive" />
-        </el-form-item>
-      </el-form>
-      
-      <template #footer>
-        <el-button @click="studentDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveStudent">保存</el-button>
-      </template>
-    </el-dialog>
+
   </div>
 </template>
 
@@ -199,12 +130,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
-  Upload,
-  Download,
-  Plus
+  Upload
 } from '@element-plus/icons-vue'
-import { getStudents, addStudent as addStudentApi, updateStudent, deleteStudent as deleteStudentApi, importStudents, resetStudentPassword } from '../../api/student'
-import { usePermissions } from '../../services/permissionService'
+import { getStudents, importStudents, updateStudentStatus } from '../../api/student'
 import * as XLSX from 'xlsx'
 import * as pdfjsLib from 'pdfjs-dist'
 
@@ -385,20 +313,9 @@ const pageSize = ref(10)
 const total = ref(100)
 
 const importDialogVisible = ref(false)
-const studentDialogVisible = ref(false)
-const isEdit = ref(false)
 const importResult = ref<any>(null)
 const previewData = ref<any[]>([])
 const selectedImportFile = ref<File | null>(null)
-
-const form = ref({
-  id: '',
-  name: '',
-  username: '',
-  email: '',
-  phone: '',
-  status: 'active'
-})
 
 const students = ref<any[]>([])
 
@@ -407,27 +324,25 @@ const loadStudents = async () => {
   try {
     const result = await getStudents({
       keyword: searchKeyword.value,
-      status: filterStatus.value,
       page: currentPage.value,
-      pageSize: pageSize.value
+      size: pageSize.value
     })
     const raw = result.data?.students || result.data?.list || result.data || []
     students.value = (Array.isArray(raw) ? raw : []).map((s: any) => ({
-      id: s.student_id || s.id || '',
+      id: s.user_id || s.id || '',
       name: s.real_name || s.name || '',
       username: s.username || '',
       email: s.email || '',
       phone: s.phone || '',
+      studentId: s.student_id || '',
       status: s.is_active ? 'active' : 'inactive'
     }))
-    total.value = result.data?.total || students.value.length
+    total.value = result.data?.total || result.data?.count || students.value.length
   } catch (error) {
+    console.error('[StudentManagement] 加载学生数据失败:', error)
     ElMessage.error('加载学生数据失败')
   }
 }
-
-// 权限管理
-const { canPerformAction, canEditStudent } = usePermissions()
 
 // 组件挂载时加载数据
 onMounted(() => {
@@ -542,75 +457,17 @@ const confirmImport = async () => {
   }
 }
 
-const exportStudents = () => {
-  ElMessage.success('学生信息导出成功')
-}
 
-const addStudent = () => {
-  isEdit.value = false
-  form.value = {
-    id: '',
-    name: '',
-    username: '',
-    email: '',
-    phone: '',
-    status: 'active'
-  }
-  studentDialogVisible.value = true
-}
-
-const editStudent = (row: any) => {
-  isEdit.value = true
-  form.value = { ...row }
-  studentDialogVisible.value = true
-}
-
-const saveStudent = async () => {
-  try {
-    if (isEdit.value) {
-      await updateStudent(form.value.id, form.value)
-      ElMessage.success('学生信息编辑成功')
-    } else {
-      const result = await addStudentApi(form.value)
-      const newStudent = result.data || form.value
-      students.value.push(newStudent)
-      ElMessage.success('学生添加成功')
-    }
-    studentDialogVisible.value = false
-    await loadStudents()
-  } catch (error) {
-    ElMessage.error(isEdit.value ? '学生信息编辑失败' : '学生添加失败')
-  }
-}
 
 const toggleStatus = async (row: any) => {
   try {
-    const newStatus = row.status === 'active' ? 'inactive' : 'active'
-    await updateStudent(row.id, { status: newStatus })
-    row.status = newStatus
-    ElMessage.success(`学生状态已${newStatus === 'active' ? '激活' : '禁用'}`)
+    const isActive = row.status !== 'active'
+    await updateStudentStatus(row.id, { is_active: isActive })
+    row.status = isActive ? 'active' : 'inactive'
+    ElMessage.success(`学生状态已${isActive ? '激活' : '禁用'}`)
   } catch (error) {
     ElMessage.error('修改学生状态失败')
   }
-}
-
-const handleDeleteStudent = (row: any) => {
-  ElMessageBox.confirm('确定要删除该学生吗？', '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await deleteStudentApi(row.id)
-      const index = students.value.findIndex(s => s.id === row.id)
-      if (index > -1) {
-        students.value.splice(index, 1)
-      }
-      ElMessage.success('学生删除成功')
-    } catch (error) {
-      ElMessage.error('学生删除失败')
-    }
-  })
 }
 
 const handleSizeChange = async (size: number) => {

@@ -12,7 +12,7 @@
         </el-button>
       </div>
     </div>
-    
+
     <div class="stats-overview">
       <el-card class="stat-card">
         <div class="stat-content">
@@ -25,7 +25,7 @@
           </div>
         </div>
       </el-card>
-      
+
       <el-card class="stat-card">
         <div class="stat-content">
           <div class="stat-icon" style="background-color: var(--success-bg);">
@@ -37,7 +37,7 @@
           </div>
         </div>
       </el-card>
-      
+
       <el-card class="stat-card">
         <div class="stat-content">
           <div class="stat-icon" style="background-color: var(--warning-bg);">
@@ -49,7 +49,7 @@
           </div>
         </div>
       </el-card>
-      
+
       <el-card class="stat-card">
         <div class="stat-content">
           <div class="stat-icon" style="background-color: var(--danger-bg);">
@@ -62,14 +62,14 @@
         </div>
       </el-card>
     </div>
-    
+
     <el-card class="filter-card">
       <div class="filter-row">
         <el-select v-model="filterCourse" placeholder="选择课程" clearable class="filter-select">
           <el-option label="全部课程" value="" />
-          <el-option v-for="course in courses" :key="course.id" :label="course.name" :value="course.id" />
+          <el-option v-for="course in courses" :key="course.id ?? course.course_id" :label="course.name ?? course.course_name" :value="String(course.id ?? course.course_id)" />
         </el-select>
-        
+
         <el-select v-model="filterStatus" placeholder="完成状态" clearable class="filter-select">
           <el-option label="全部状态" value="" />
           <el-option label="已完成" value="completed" />
@@ -77,7 +77,7 @@
           <el-option label="未通过" value="failed" />
           <el-option label="未完成" value="pending" />
         </el-select>
-        
+
         <el-select v-model="filterScoreRange" placeholder="分数范围" clearable class="filter-select">
           <el-option label="全部分数" value="" />
           <el-option label="90-100分" value="90-100" />
@@ -85,17 +85,17 @@
           <el-option label="60-79分" value="60-79" />
           <el-option label="60分以下" value="0-59" />
         </el-select>
-        
+
         <el-input
           v-model="searchKeyword"
           placeholder="搜索作业名称"
-          prefix-icon="Search"
+          :prefix-icon="Search"
           clearable
           class="search-input"
         />
       </div>
     </el-card>
-    
+
     <el-card class="grades-card">
       <el-table :data="filteredGrades" style="width: 100%" @row-click="viewDetail">
         <el-table-column prop="courseName" label="课程" width="180" />
@@ -161,7 +161,7 @@
         </el-table-column>
       </el-table>
     </el-card>
-    
+
     <el-dialog
       v-model="detailDialogVisible"
       title="成绩详情"
@@ -185,9 +185,9 @@
             </div>
           </div>
         </div>
-        
+
         <el-divider />
-        
+
         <div class="detail-stats">
           <div class="stat-item">
             <span class="stat-value">{{ selectedGrade.passedCases }}/{{ selectedGrade.totalCases }}</span>
@@ -206,7 +206,7 @@
             <span class="stat-label">排名</span>
           </div>
         </div>
-        
+
         <div class="testcases-detail">
           <h3>测试用例详情</h3>
           <div class="testcases-list">
@@ -244,7 +244,7 @@
           </div>
         </div>
       </div>
-      
+
       <template #footer>
         <el-button @click="detailDialogVisible = false">关闭</el-button>
         <el-button type="primary" @click="retrySubmit">重新提交</el-button>
@@ -265,7 +265,8 @@ import {
   Document, 
   CircleCheck, 
   TrendCharts, 
-  Trophy 
+  Trophy,
+  Search
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -284,8 +285,8 @@ const stats = ref({
   ranking: 0
 })
 
-const courses = ref([])
-const grades = ref([])
+const courses = ref<any[]>([])
+const grades = ref<any[]>([])
 
 const loadGrades = async () => {
   try {
@@ -295,113 +296,142 @@ const loadGrades = async () => {
       getCourses()
     ])
 
-    // 课程映射
-    const courseMap: Record<number, string> = {}
+    // ========== 1. 构建课程映射表（修复：统一用 String key，兼容 id/course_id 和 name/course_name）==========
+    const courseMap: Record<string, string> = {}
     if (coursesRes.code === 200 && coursesRes.data) {
-      courses.value = coursesRes.data || [] // 修复：赋值课程数据供下拉框使用
+      courses.value = coursesRes.data || []
       for (const c of (coursesRes.data || [])) {
-        courseMap[c.course_id || c.id] = c.course_name || c.name
+        const cid = String(c.id ?? c.course_id ?? '')
+        const cname = c.name ?? c.course_name ?? '未知课程'
+        if (cid) {
+          courseMap[cid] = cname
+        }
       }
     }
 
-    // 作业映射
+    // ========== 2. 构建作业映射表（统一用 String key）==========
     const asgnMap: Record<string, any> = {}
     if (assignmentsRes.code === 200 && assignmentsRes.data) {
       for (const a of (assignmentsRes.data || [])) {
-        asgnMap[String(a.assignment_id || a.id)] = a
+        const aid = String(a.id ?? a.assignment_id ?? '')
+        if (aid) {
+          asgnMap[aid] = a
+        }
       }
     }
 
-    // 成绩列表 — 按作业去重，取最佳提交
+    // ========== 3. 处理提交记录，按作业取最高分 ==========
     if (submissionsRes.code === 200 && submissionsRes.data) {
       const list = submissionsRes.data || []
+
       // 按作业取最高分
       const bestByAsgn: Record<string, any> = {}
       for (const s of list) {
-        const aid = String(s.assignment_id)
+        const aid = String(s.assignment_id ?? s.id ?? '')
+        if (!aid) continue
         const score = s.overall_score ?? s.score ?? 0
-        if (!bestByAsgn[aid] || score > (bestByAsgn[aid].overall_score ?? 0)) {
+        if (!bestByAsgn[aid] || score > (bestByAsgn[aid].overall_score ?? bestByAsgn[aid].score ?? 0)) {
           bestByAsgn[aid] = s
         }
       }
 
       grades.value = Object.values(bestByAsgn).map((s: any) => {
-        const aid = String(s.assignment_id)
+        const aid = String(s.assignment_id ?? s.id ?? '')
         const asgn = asgnMap[aid]
-        const score = s.overall_score ?? s.score ?? 0
-        const passedCount = s.passed_count || 0
-        const totalCount = s.total_count || 0
+
+        // 获取课程ID（兼容多种字段名）
+        const rawCourseId = asgn?.course_id ?? asgn?.class_id ?? s?.course_id ?? s?.class_id ?? ''
+        const courseIdStr = String(rawCourseId)
+
+        // 获取课程名称：优先用 courseMap 映射，其次用作业里的 class_name/course_name，最后兜底
+        let courseName = ''
+        if (courseIdStr && courseMap[courseIdStr]) {
+          courseName = courseMap[courseIdStr]
+        } else if (asgn?.class_name) {
+          courseName = asgn.class_name
+        } else if (asgn?.course_name) {
+          courseName = asgn.course_name
+        } else if (s?.course_name) {
+          courseName = s.course_name
+        } else {
+          courseName = '未知课程'
+        }
+
+        const score = s.overall_score ?? s.score ?? null
+        const passedCount = s.passed_count ?? 0
+        const totalCount = s.total_count ?? 0
+
+        // 状态判断：有分数且>=60为完成；有分数但<60且有通过用例为部分通过；有分数但<60且无通过用例为失败；无分数为未完成
         let status = 'pending'
-        
-        // 根据得分判断状态，60分及以上为通过
-        if (score > 0) {
+        if (score !== null && score > 0) {
           if (score >= 60) {
             status = 'completed'
-          } else if (passedCount > 0 && passedCount < totalCount) {
+          } else if (passedCount > 0) {
             status = 'partial'
           } else {
             status = 'failed'
           }
         }
-        
+
         return {
-          id: s.submission_id || s.id,
-          courseId: asgn ? String(asgn.course_id || asgn.class_id) : '',
-          courseName: asgn ? (courseMap[asgn.course_id] || asgn.class_name || '') : (s.assignment_title || ''),
+          id: s.submission_id ?? s.id,
+          courseId: courseIdStr,
+          courseName: courseName,
           assignmentId: s.assignment_id,
-          assignmentName: s.assignment_title || asgn?.title || '',
+          assignmentName: s.assignment_title ?? asgn?.title ?? asgn?.assignment_title ?? '未命名作业',
           questionId: s.question_id,
           score: score,
           totalScore: 100,
           status: status,
           language: s.language || '',
-          submitTime: s.submitted_at || s.submitTime || '',
+          submitTime: s.submitted_at ?? s.submit_time ?? s.created_at ?? '-',
           passedCount: passedCount,
           totalCount: totalCount,
-          passRate: totalCount > 0 ? Math.round(passedCount / totalCount * 100) : null,
+          passRate: totalCount > 0 ? Math.round((passedCount / totalCount) * 100) : null,
           passedCases: passedCount,
           totalCases: totalCount
         }
       })
 
       // 计算统计数据
-      const scored = grades.value.filter((g: any) => g.score > 0)
+      const scored = grades.value.filter((g: any) => g.score !== null && g.score > 0)
       stats.value = {
         totalAssignments: grades.value.length,
         completedAssignments: grades.value.filter((g: any) => g.status === 'completed' || g.status === 'partial').length,
-        avgScore: scored.length > 0 ? Math.round(scored.reduce((sum: number, g: any) => sum + g.score, 0) / scored.length * 10) / 10 : 0,
+        avgScore: scored.length > 0 ? Math.round((scored.reduce((sum: number, g: any) => sum + g.score, 0) / scored.length) * 10) / 10 : 0,
         ranking: 0
       }
     }
   } catch (e) {
     console.error('加载成绩失败:', e)
+    ElMessage.error('加载成绩失败，请稍后重试')
   }
 }
 
 const filteredGrades = computed(() => {
   let result = grades.value
-  
-  if (filterCourse.value) {
+
+  if (filterCourse.value !== '' && filterCourse.value !== null && filterCourse.value !== undefined) {
     result = result.filter(g => String(g.courseId) === String(filterCourse.value))
   }
-  
+
   if (filterStatus.value) {
     result = result.filter(g => g.status === filterStatus.value)
   }
-  
+
   if (filterScoreRange.value) {
     const [min, max] = filterScoreRange.value.split('-').map(Number)
     result = result.filter(g => g.score !== null && g.score >= min && g.score <= max)
   }
-  
+
   if (searchKeyword.value) {
     const keyword = searchKeyword.value.toLowerCase()
     result = result.filter(g => 
-      g.assignmentName.toLowerCase().includes(keyword) ||
-      g.courseName.toLowerCase().includes(keyword)
+      (g.assignmentName || '').toLowerCase().includes(keyword) ||
+      (g.courseName || '').toLowerCase().includes(keyword)
     )
   }
-  
+
   return result
 })
 
@@ -759,33 +789,33 @@ onMounted(() => {
   .grades-container {
     padding: var(--spacing-md);
   }
-  
+
   .page-header {
     flex-direction: column;
     gap: var(--spacing-md);
   }
-  
+
   .stats-overview {
     grid-template-columns: 1fr;
   }
-  
+
   .filter-row {
     flex-direction: column;
   }
-  
+
   .filter-select,
   .search-input {
     width: 100%;
     margin-left: 0;
   }
-  
+
   .detail-header {
     flex-direction: column;
     gap: var(--spacing-lg);
     align-items: center;
     text-align: center;
   }
-  
+
   .detail-stats {
     flex-wrap: wrap;
     gap: var(--spacing-lg);

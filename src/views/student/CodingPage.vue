@@ -755,7 +755,7 @@ const loadSubmissionHistory = async () => {
         .map((s: any) => ({
           id: s.submission_id || '',
           time: s.submitted_at ? new Date(s.submitted_at).toLocaleString() : '',
-          status: (s.passed_count || 0) >= (s.total_count || 1) ? 'passed' : 'failed',
+          status: (s.overall_score ?? 0) >= 60 ? 'passed' : 'failed',
           score: s.overall_score ?? 0,
           language: s.language || '',
           code: s.code || '',

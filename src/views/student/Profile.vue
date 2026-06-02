@@ -265,70 +265,20 @@
       </el-form>
     </el-card>
     
-    <el-card class="stats-card">
-      <template #header>
-        <div class="card-header">
-          <span class="card-title">学习统计</span>
-        </div>
-      </template>
-      
-      <div class="stats-grid">
-        <div class="stat-item">
-          <div class="stat-icon" style="background-color: var(--primary-bg);">
-            <el-icon :size="24" style="color: var(--primary-color);"><Reading /></el-icon>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ stats.totalCourses }}</span>
-            <span class="stat-label">参与课程</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon" style="background-color: var(--success-bg);">
-            <el-icon :size="24" style="color: var(--success-color);"><Document /></el-icon>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ stats.completedAssignments }}</span>
-            <span class="stat-label">完成作业</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon" style="background-color: var(--warning-bg);">
-            <el-icon :size="24" style="color: var(--warning-color);"><TrendCharts /></el-icon>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ stats.avgScore }}</span>
-            <span class="stat-label">平均分数</span>
-          </div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-icon" style="background-color: var(--danger-bg);">
-            <el-icon :size="24" style="color: var(--danger-color);"><Trophy /></el-icon>
-          </div>
-          <div class="stat-content">
-            <span class="stat-value">{{ stats.ranking }}</span>
-            <span class="stat-label">班级排名</span>
-          </div>
-        </div>
-      </div>
-    </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { 
   User, 
   Upload, 
   Edit, 
-  Lock, 
-  Reading, 
-  Document, 
-  TrendCharts, 
-  Trophy 
+  Lock 
 } from '@element-plus/icons-vue'
 import { useUserStore } from '../../stores/user'
-import { updateCurrentUser } from '../../api/user'
+import { getCurrentUser, updateCurrentUser } from '../../api/user'
 import type { UploadProps, FormInstance, FormRules } from 'element-plus'
 
 const userStore = useUserStore()
@@ -408,13 +358,6 @@ const passwordRules: FormRules = {
   ]
 }
 
-const stats = reactive({
-  totalCourses: 0,
-  completedAssignments: 0,
-  avgScore: 0,
-  ranking: 0
-})
-
 const beforeAvatarUpload: UploadProps['beforeUpload'] = (rawFile) => {
   if (rawFile.type !== 'image/jpeg' && rawFile.type !== 'image/png') {
     ElMessage.error('头像图片只能是 JPG/PNG 格式!')
@@ -451,11 +394,20 @@ const saveEdit = async () => {
   
   try {
     await formRef.value.validate()
+    
+    await updateCurrentUser({
+      real_name: editForm.name,
+      email: editForm.email,
+      phone: editForm.phone
+    })
+    
     Object.assign(userInfo, editForm)
     isEditing.value = false
     ElMessage.success('保存成功')
-  } catch (error) {
-    console.error('表单校验失败', error)
+  } catch (error: any) {
+    console.error('保存失败', error)
+    const msg = error?.response?.data?.detail || '保存失败'
+    ElMessage.error(msg)
   }
 }
 
@@ -493,6 +445,39 @@ const changePassword = async () => {
     passwordLoading.value = false
   }
 }
+
+const loadUserInfo = async () => {
+  try {
+    const response = await getCurrentUser()
+    if (response.code === 200 && response.data) {
+      const data = response.data
+      userInfo.studentId = data.student_id || data.studentId || ''
+      userInfo.userId = data.user_id || data.userId || ''
+      userInfo.name = data.real_name || data.realName || data.name || ''
+      userInfo.email = data.email || ''
+      userInfo.phone = data.phone || ''
+      userInfo.avatar = data.avatar_url || data.avatar || ''
+      userInfo.role = data.role || ''
+      userInfo.status = data.is_active ? 'active' : 'inactive'
+      userInfo.createdAt = data.created_at || data.createdAt || ''
+      userInfo.lastLoginAt = data.last_login_at || data.lastLoginAt || ''
+      userInfo.firstPasswordChanged = data.first_password_changed || data.firstPasswordChanged || false
+      userInfo.department = data.department || ''
+      
+      editForm.name = userInfo.name
+      editForm.email = userInfo.email
+      editForm.phone = userInfo.phone
+      
+      userStore.updateUserInfo(data)
+    }
+  } catch (error) {
+    console.error('加载用户信息失败:', error)
+  }
+}
+
+onMounted(() => {
+  loadUserInfo()
+})
 </script>
 
 <style scoped>
@@ -538,8 +523,7 @@ const changePassword = async () => {
 }
 
 .info-card,
-.password-card,
-.stats-card {
+.password-card {
   margin-bottom: var(--spacing-lg);
   border: 1px solid var(--border-light);
 }
@@ -569,48 +553,6 @@ const changePassword = async () => {
   padding-top: var(--spacing-md);
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--spacing-lg);
-  padding: var(--spacing-md) 0;
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  background-color: var(--bg-secondary);
-  border-radius: var(--border-radius-md);
-}
-
-.stat-icon {
-  width: 48px;
-  height: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--border-radius-md);
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-}
-
-.stat-label {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
-  margin-top: var(--spacing-xs);
-}
-
 @media (max-width: 768px) {
   .profile-container {
     padding: var(--spacing-md);
@@ -624,16 +566,6 @@ const changePassword = async () => {
   
   .user-info-header h1 {
     font-size: var(--font-size-xl);
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
   }
 }
 </style>

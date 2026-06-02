@@ -63,5 +63,5 @@ export const resetStudentPassword = async (userId: string, data: any) => {
 
 // 切换学生状态
 export const updateStudentStatus = async (userId: string, data: any) => {
-  return await request.patch(`/students/${userId}/status`, data)
+  return await axiosInstance.patch(`/students/${userId}/status`, {}, { params: { is_active: data.is_active } })
 }

@@ -39,13 +39,9 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${userStore.token}`
     }
 
-    // ============================================
-    // 修复: 动态设置 Content-Type
-    // ============================================
     // FormData 时让浏览器自动处理 multipart/form-data（不设置 Content-Type）
     // 其他情况默认使用 application/json
     if (config.data instanceof FormData) {
-      // 删除 Content-Type，让浏览器自动设置 multipart/form-data; boundary=...
       delete config.headers['Content-Type']
     } else if (!config.headers['Content-Type']) {
       config.headers['Content-Type'] = 'application/json'
@@ -188,6 +184,18 @@ export const request = {
       }
     }
     return await axiosInstance.put(url, data)
+  },
+
+  patch: async (url: string, data?: any) => {
+    if (enableMock) {
+      try {
+        return await mockRequest(url, 'patch', data)
+      } catch (mockError) {
+        console.log('[Request] Mock失败，尝试真实请求')
+        return await axiosInstance.patch(url, data)
+      }
+    }
+    return await axiosInstance.patch(url, data)
   },
 
   delete: async (url: string, params?: any) => {

@@ -30,15 +30,13 @@
         
         <el-input
           v-model="searchKeyword"
-          placeholder="搜索用户名、姓名或邮箱"
+          placeholder="搜索姓名或邮箱"
           prefix-icon="Search"
           clearable
           class="search-input"
         />
         
-        <el-button type="primary" plain @click="batchOperation" :disabled="selectedUsers.length === 0">
-          批量操作
-        </el-button>
+
       </div>
     </el-card>
     
@@ -46,10 +44,7 @@
       <el-table
         :data="filteredUsers"
         style="width: 100%"
-        @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="50" />
-        <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="name" label="姓名" width="100" />
         <el-table-column prop="role" label="角色" width="100" align="center">
           <template #default="scope">
@@ -81,9 +76,7 @@
             <el-button type="primary" link size="small" @click="viewUser(scope.row)">
               查看
             </el-button>
-            <el-button type="primary" link size="small" @click="resetPassword(scope.row)">
-              重置密码
-            </el-button>
+
             <el-button
               v-if="scope.row.role !== 'admin'"
               :type="scope.row.status === 'active' ? 'warning' : 'success'"
@@ -93,15 +86,7 @@
             >
               {{ scope.row.status === 'active' ? '禁用' : '启用' }}
             </el-button>
-            <el-button
-              v-if="scope.row.role !== 'admin'"
-              type="danger"
-              link
-              size="small"
-              @click="deleteUser(scope.row)"
-            >
-              删除
-            </el-button>
+
           </template>
         </el-table-column>
       </el-table>
@@ -193,7 +178,6 @@
         <el-divider />
         
         <el-descriptions :column="2" border>
-          <el-descriptions-item label="用户名">{{ selectedUser.username }}</el-descriptions-item>
           <el-descriptions-item label="姓名">{{ selectedUser.name }}</el-descriptions-item>
           <el-descriptions-item label="邮箱">{{ selectedUser.email }}</el-descriptions-item>
           <el-descriptions-item label="手机号">{{ selectedUser.phone || '-' }}</el-descriptions-item>
@@ -207,37 +191,25 @@
       </div>
     </el-dialog>
     
-    <el-dialog
-      v-model="batchDialogVisible"
-      title="批量操作"
-      width="400px"
-    >
-      <p style="margin-bottom: var(--spacing-lg);">已选择 {{ selectedUsers.length }} 个用户</p>
-      <div class="batch-actions">
-        <el-button type="danger" @click="batchDisable">批量停用</el-button>
-        <el-button type="warning" @click="batchResetPassword">批量重置密码</el-button>
-      </div>
-    </el-dialog>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { getUsers, createTeacher, toggleUserStatus, deleteUser as deleteUserApi } from '../../api/user'
+import { getUsers, createTeacher, toggleUserStatus } from '../../api/user'
 import { Plus } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 
 const filterRole = ref('')
 const filterStatus = ref('')
 const searchKeyword = ref('')
-const selectedUsers = ref<any[]>([])
 const currentPage = ref(1)
 const pageSize = ref(10)
 const totalUsers = ref(100)
 const createDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
-const batchDialogVisible = ref(false)
 const selectedUser = ref<any>(null)
 
 const createFormRef = ref<FormInstance>()
@@ -303,20 +275,18 @@ const getRoleText = (role: string): string => {
   }
 }
 
-const handleSelectionChange = (selection: any[]) => {
-  selectedUsers.value = selection
-}
-
 const handleStatusChange = (user: any) => {
   ElMessage.success(`用户 ${user.name} 状态已更新`)
 }
 
 const handleSizeChange = (size: number) => {
   pageSize.value = size
+  loadUsers()
 }
 
 const handlePageChange = (page: number) => {
   currentPage.value = page
+  loadUsers()
 }
 
 const showCreateDialog = () => {
@@ -387,37 +357,33 @@ const viewUser = (user: any) => {
   detailDialogVisible.value = true
 }
 
-const resetPassword = (user: any) => {
-  ElMessageBox.confirm(`确定要重置用户 ${user.name} 的密码吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(() => {
-    ElMessage.success('密码已重置，新密码已发送到用户邮箱')
-  })
-}
-
 // 加载用户列表
 const loadUsers = async () => {
   try {
-    const response = await getUsers()
+    const response = await getUsers({
+      page: currentPage.value,
+      size: pageSize.value,
+      role: filterRole.value,
+      status: filterStatus.value,
+      keyword: searchKeyword.value
+    })
     if (response.code === 200 && response.data) {
       const userList = response.data.users || response.data.data || (Array.isArray(response.data) ? response.data : [])
       users.value = userList.map((user: any) => ({
-        id: user.id || user.userId || user.user_id,
-        username: user.username || user.user_name,
-        name: user.name || user.real_name || user.realName,
+        id: user.id || user.user_id,
+        username: user.username,
+        name: user.real_name || user.name || '',
         role: user.role,
         email: user.email || '',
-        className: user.className || user.class_name || '',
-        department: user.department || user.dept || '',
+        className: user.class_name || '',
+        department: user.department || '',
         status: user.is_active ? 'active' : 'inactive',
-        lastLogin: user.lastLogin || user.last_login || user.last_login_at || '',
-        createTime: user.created_at || user.createTime || user.create_time || '',
+        lastLogin: user.last_login_at || user.last_login || '',
+        createTime: user.created_at || '',
         phone: user.phone || '',
-        loginCount: user.loginCount || user.login_count || 0
+        loginCount: user.login_count || 0
       }))
-      totalUsers.value = response.data?.total || response.data?.data?.length || userList.length
+      totalUsers.value = response.data.total || response.data.count || userList.length
     }
   } catch (error) {
     console.error('[UserManagement] 加载用户失败:', error)
@@ -432,46 +398,16 @@ onMounted(() => {
 
 const handleToggleStatus = async (user: any) => {
   try {
-    await toggleUserStatus(String(user.id))
+    const isActive = user.status !== 'active'
+    await toggleUserStatus(String(user.id), isActive)
     await loadUsers()
-    ElMessage.success(user.status === 'active' ? '账号已禁用' : '账号已启用')
+    ElMessage.success(isActive ? '账号已启用' : '账号已禁用')
   } catch (e) {
     ElMessage.error('操作失败')
   }
 }
 
-const deleteUser = (user: any) => {
-  ElMessageBox.confirm(`确定要删除用户 ${user.name} 吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await deleteUserApi(String(user.id))
-      await loadUsers()
-      ElMessage.success('删除成功')
-    } catch (e) {
-      ElMessage.error('删除失败')
-    }
-  })
-}
 
-const batchOperation = () => {
-  batchDialogVisible.value = true
-}
-
-const batchDisable = () => {
-  selectedUsers.value.forEach(user => {
-    user.status = 'disabled'
-  })
-  ElMessage.success(`已停用 ${selectedUsers.value.length} 个用户`)
-  batchDialogVisible.value = false
-}
-
-const batchResetPassword = () => {
-  ElMessage.success(`已重置 ${selectedUsers.value.length} 个用户的密码`)
-  batchDialogVisible.value = false
-}
 </script>
 
 <style scoped>
