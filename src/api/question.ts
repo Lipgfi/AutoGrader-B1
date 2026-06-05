@@ -1,41 +1,71 @@
 import { request } from './interceptors'
 
-// 获取题目列表
-export const getQuestions = async (params?: any) => {
+export const getQuestions = async (params?: {
+  type?: string
+  difficulty?: string
+  language?: string
+  keyword?: string
+  page?: number
+  size?: number
+}) => {
   return await request.get('/questions', params)
 }
 
-// 获取题目详情
-export const getQuestionDetail = async (questionId: string) => {
-  return await request.get(`/questions/${questionId}`)
+export const getQuestionDetail = async (questionId: string, params?: {
+  include_test_cases?: boolean
+  include_solution?: boolean
+}) => {
+  return await request.get(`/questions/${questionId}`, params)
 }
 
-// 创建题目
-export const createQuestion = async (data: any) => {
+export const createQuestion = async (data: {
+  title: string
+  description: string
+  type: string
+  difficulty: string
+  language: string
+  time_limit?: number
+  memory_limit?: number
+  starter_code?: string
+  solution_code?: string
+  test_cases: {
+    input: string
+    expected_output: string
+    is_public: boolean
+    score_weight: number
+  }[]
+}) => {
   return await request.post('/questions', data)
 }
 
-// 更新题目
-export const updateQuestion = async (questionId: string, data: any) => {
+export const updateQuestion = async (questionId: string, data: {
+  title?: string
+  description?: string
+  time_limit?: number
+  memory_limit?: number
+  starter_code?: string
+  is_active?: boolean
+}) => {
   return await request.put(`/questions/${questionId}`, data)
 }
 
-// 删除题目
 export const deleteQuestion = async (questionId: string) => {
   return await request.delete(`/questions/${questionId}`)
 }
 
-// 获取题目测试用例
 export const getQuestionTestCases = async (questionId: string) => {
   return await request.get(`/questions/${questionId}/testcases`)
 }
 
-// 添加测试用例
-export const addQuestionTestCase = async (questionId: string, data: any) => {
+export const addQuestionTestCase = async (questionId: string, data: {
+  input: string
+  expected_output: string
+  is_public: boolean
+  score_weight: number
+}[]) => {
   return await request.post(`/questions/${questionId}/testcases`, data)
 }
 
-// 删除测试用例
-export const deleteQuestionTestCase = async (questionId: string, testCaseId: string) => {
+export const deleteQuestionTestCase = async (questionId: string, testCaseId: string | number) => {
   return await request.delete(`/questions/${questionId}/testcases/${testCaseId}`)
 }

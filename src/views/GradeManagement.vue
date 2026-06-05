@@ -124,14 +124,11 @@
       <template #header>
         <div class="card-header">
           <span>成绩分布</span>
-          <el-radio-group v-model="chartType" size="small">
-                <el-radio-button value="bar">柱状图</el-radio-button>
-                <el-radio-button value="pie">饼图</el-radio-button>
-              </el-radio-group>
         </div>
       </template>
       <div class="chart-container">
-        <div class="bar-chart" v-if="chartType === 'bar'">
+        <el-empty v-if="computedStats.totalStudents === 0" description="暂无成绩数据" />
+        <div class="bar-chart">
           <div class="bar-wrapper" v-for="(item, index) in computedStats.distribution" :key="index">
             <span class="bar-label-text">{{ item.name }}</span>
             <div class="bar-track">
@@ -141,36 +138,8 @@
                   width: maxCount > 0 ? (item.count / maxCount * 100) + '%' : '0%',
                   backgroundColor: barColors[index % barColors.length]
                 }"
-              >
-                <span class="bar-count" v-if="item.count > 0">{{ item.count }}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="pie-chart-wrap" v-else>
-          <div class="pie-visual">
-            <svg viewBox="0 0 200 200" class="pie-svg">
-              <circle
-                v-for="(seg, si) in pieSegments"
-                :key="si"
-                cx="100" cy="100" r="80"
-                fill="none"
-                stroke-width="40"
-                :stroke="seg.color"
-                :stroke-dasharray="`${seg.dashLen} ${100 - seg.dashLen}`"
-                :stroke-dashoffset="seg.offset"
-                transform="rotate(-90 100 100)"
-                class="pie-segment"
-              />
-              <text x="100" y="95" text-anchor="middle" class="pie-total">{{ computedStats.submittedCount }}</text>
-              <text x="100" y="115" text-anchor="middle" class="pie-total-label">总人数</text>
-            </svg>
-          </div>
-          <div class="pie-legend">
-            <div class="legend-item" v-for="(item, index) in computedStats.distribution" :key="index">
-              <span class="legend-dot" :style="{ backgroundColor: barColors[index % barColors.length] }"></span>
-              <span class="legend-name">{{ item.name }}</span>
-              <span class="legend-count">{{ item.count }}人</span>
+              ></div>
+              <span class="bar-count">{{ item.count }}</span>
             </div>
           </div>
         </div>
@@ -222,13 +191,6 @@
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column prop="examScore" label="考试成绩" width="100" sortable>
-          <template #default="scope">
-            <el-tag :type="getScoreType(scope.row.examScore)">
-              {{ scope.row.examScore }}
-            </el-tag>
-          </template>
-        </el-table-column>
         <el-table-column prop="totalScore" label="总评成绩" width="100" sortable>
           <template #default="scope">
             <el-tag :type="getScoreType(scope.row.totalScore)" effect="dark">
@@ -277,12 +239,6 @@
                   {{ item.homeworkScore }}
                 </span>
               </div>
-              <div class="score-item">
-                <span class="score-label">考试</span>
-                <span class="score-value" :class="getScoreClass(item.examScore)">
-                  {{ item.examScore }}
-                </span>
-              </div>
               <div class="score-item total">
                 <span class="score-label">总评</span>
                 <span class="score-value" :class="getScoreClass(item.totalScore)">
@@ -327,11 +283,6 @@
         <el-descriptions-item label="作业成绩">
           <el-tag :type="getScoreType(currentStudent.homeworkScore)">
             {{ currentStudent.homeworkScore }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="考试成绩">
-          <el-tag :type="getScoreType(currentStudent.examScore)">
-            {{ currentStudent.examScore }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="总评成绩" :span="2">
@@ -384,9 +335,6 @@
         <el-form-item label="作业成绩">
           <el-input-number v-model="editForm.homeworkScore" :min="0" :max="100" />
         </el-form-item>
-        <el-form-item label="考试成绩">
-          <el-input-number v-model="editForm.examScore" :min="0" :max="100" />
-        </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="editForm.remark" type="textarea" rows="3" />
         </el-form-item>
@@ -400,12 +348,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { getAssignments } from '../api/assignment'
 import { getClasses } from '../api/class'
 import { getCourses } from '../api/course'
-import { getAssignmentSubmissions, overrideSubmissionScore } from '../api/submission'
+import { getClassGrades } from '../api/grade'
+import { overrideSubmissionScore } from '../api/submission'
 import { 
   Download, 
   Refresh, 
@@ -422,7 +371,6 @@ import {
 
 const loading = ref(false)
 const viewMode = ref<'table' | 'card'>('table')
-const chartType = ref<'bar' | 'pie'>('bar')
 const searchKeyword = ref('')
 const detailDialogVisible = ref(false)
 const editDialogVisible = ref(false)
@@ -442,25 +390,13 @@ const scoreMarks = {
   100: '100'
 }
 
-const barColors = ['#5470c6', '#91cc75', '#fac858', '#ee6666', '#73c0de', '#3ba272', '#fc8452', '#9a60b4']
+const barColors = ['#00B42A', '#165DFF', '#FF7D00', '#F53F3F']
 
 const maxCount = computed(() => {
   const dist = computedStats.value.distribution
   return dist.length > 0 ? Math.max(...dist.map((item: any) => item.count), 1) : 1
 })
 
-const pieSegments = computed(() => {
-  const dist = computedStats.value.distribution
-  const total = dist.reduce((sum: number, d: any) => sum + d.count, 0)
-  if (total === 0) return []
-  let offset = 0
-  return dist.map((d: any, i: number) => {
-    const pct = d.count / total
-    const seg = { ...d, color: barColors[i % barColors.length], dashLen: pct * 100, offset: -offset }
-    offset += pct * 100
-    return seg
-  })
-})
 
 const pagination = reactive({
   currentPage: 1,
@@ -472,7 +408,8 @@ const filterCourses = ref<any[]>([])
 const filterClasses = ref<any[]>([])
 const gradeList = ref([])
 
-const filteredGradeList = computed(() => {
+// 完整过滤排序后的数据（供统计图表使用）
+const allFilteredGrades = computed(() => {
   let result = gradeList.value
   if (filterForm.studentName) {
     const kw = filterForm.studentName.toLowerCase()
@@ -491,7 +428,6 @@ const filteredGradeList = computed(() => {
     const [min, max] = filterForm.scoreRange
     result = result.filter((g: any) => g.totalScore >= min && g.totalScore <= max)
   }
-  // 排序：课程 → 班级 → 分数降序
   result.sort((a: any, b: any) => {
     const courseCmp = (a.courseName || '').localeCompare(b.courseName || '')
     if (courseCmp !== 0) return courseCmp
@@ -502,136 +438,134 @@ const filteredGradeList = computed(() => {
   return result
 })
 
+// 分页后的数据（供表格/卡片展示）
+const filteredGradeList = computed(() => {
+  const all = allFilteredGrades.value
+  pagination.total = all.length
+  const start = (pagination.currentPage - 1) * pagination.pageSize
+  return all.slice(start, start + pagination.pageSize)
+})
+
 const loadGradeData = async () => {
+  loading.value = true
   try {
-    const [asgnRes, classesRes, coursesRes] = await Promise.all([
-      getAssignments(),
+    const [classesRes, coursesRes] = await Promise.all([
       getClasses(),
       getCourses()
     ])
-    const apiAssignments = (asgnRes.code === 200 && asgnRes.data) ? (asgnRes.data || []) : []
-    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
-    const apiCourses = (coursesRes.code === 200 && coursesRes.data) ? (coursesRes.data || []) : []
+    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data.classes || classesRes.data || []) : []
+    const apiCourses = (coursesRes.code === 200 && coursesRes.data) ? (coursesRes.data.courses || coursesRes.data || []) : []
 
-    // 填充筛选下拉框
     filterCourses.value = apiCourses.map((c: any) => ({ id: c.course_id || c.id, name: c.course_name || c.name }))
     filterClasses.value = apiClasses.map((c: any) => ({ id: c.class_id || c.id, name: c.class_name || c.name }))
-    // 为每个作业加载提交记录
+
+    // 按班级获取成绩，避免按作业逐个请求导致超时
     const allGrades: any[] = []
-    // 按作业和学生统计最高分（用于计算统计数据）
     const bestByAsgnStudent: Record<string, number> = {}
 
-    for (const asgn of apiAssignments) {
-      const cls = apiClasses.find((c: any) => (c.class_id || c.id) === (asgn.class_id || asgn.classId))
-      const course = cls ? apiCourses.find((c: any) => (c.course_id || c.id) === (cls.course_id || cls.courseId)) : null
-      const asgnId = asgn.assignment_id || asgn.id
-      try {
-        const subRes = await getAssignmentSubmissions(String(asgnId))
-        if (subRes.code === 200 && subRes.data) {
-          const subs = subRes.data.submissions || subRes.data || []
-          for (const s of subs) {
-            const score = s.overall_score ?? s.score ?? 0
-            const stuId = s.student_user_id || s.student_id || ''
-            const gradeLevel = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F'
-            allGrades.push({
-              id: s.submission_id || s.id,
-              rank: 0,
-              studentNo: s.student_id || String(stuId),
-              studentName: s.student_name || s.real_name || '',
-              studentId: stuId,
-              assignmentId: asgnId,
-              assignmentTitle: asgn.title,
-              courseId: course ? (course.course_id || course.id) : '',
-              courseName: course ? (course.course_name || course.name) : '',
-              className: cls ? (cls.class_name || cls.name) : '',
-              semester: course ? (course.semester || '') : '',
-              homeworkScore: score,
-              examScore: 0,
-              totalScore: score,
-              gradeLevel,
-              score,
-              status: s.status === 'COMPLETED' ? 'graded' : 'pending',
-              submitTime: s.submitted_at || ''
-            })
-            // 每作业每学生取最高分
-            const key = `${asgnId}_${stuId}`
-            if (!(key in bestByAsgnStudent) || score > bestByAsgnStudent[key]) {
-              bestByAsgnStudent[key] = score
-            }
+    const classResults = await Promise.all(
+      apiClasses.map(async (cls: any) => {
+        const classId = cls.class_id || cls.id
+        const course = apiCourses.find((c: any) => (c.course_id || c.id) === (cls.course_id || cls.courseId))
+        try {
+          const res = await getClassGrades(String(classId))
+          return { cls, course, res }
+        } catch (e) {
+          return null
+        }
+      })
+    )
+
+    for (const result of classResults) {
+      if (!result || !result.res || result.res.code !== 200 || !result.res.data) continue
+      const { cls, course } = result
+      const studentsData = result.res.data || []
+      for (const student of studentsData) {
+        const stuId = student.user_id
+        for (const asgn of (student.assignments || [])) {
+          const score = asgn.score ?? 0
+          const gradeLevel = score >= 90 ? 'A' : score >= 80 ? 'B' : score >= 70 ? 'C' : score >= 60 ? 'D' : 'F'
+          allGrades.push({
+            id: `${stuId}_${asgn.assignment_id}`,
+            rank: 0,
+            studentNo: student.student_id || String(stuId),
+            studentName: student.student_name || '',
+            studentId: stuId,
+            assignmentId: asgn.assignment_id,
+            assignmentTitle: asgn.assignment_title || '',
+            courseId: course ? (course.course_id || course.id) : '',
+            courseName: course ? (course.course_name || course.name) : '',
+            className: cls ? (cls.class_name || cls.name) : '',
+            semester: course ? (course.semester || '') : '',
+            homeworkScore: score,
+            totalScore: score,
+            gradeLevel,
+            score,
+            status: score > 0 ? 'graded' : 'pending',
+            submitTime: ''
+          })
+          const key = `${asgn.assignment_id}_${stuId}`
+          if (!(key in bestByAsgnStudent) || score > bestByAsgnStudent[key]) {
+            bestByAsgnStudent[key] = score
           }
         }
-      } catch (e) { /* skip failed stats */ }
+      }
     }
 
     // 按总评分排序并计算排名
     allGrades.sort((a: any, b: any) => b.totalScore - a.totalScore)
     allGrades.forEach((g: any, i: number) => { g.rank = i + 1 })
     gradeList.value = allGrades
-    pagination.total = filteredGradeList.value.length
 
   } catch (e) {
     console.error('加载成绩数据失败:', e)
+  } finally {
+    loading.value = false
   }
 }
 
 const computedStats = computed(() => {
-  const list = filteredGradeList.value
+  const list = allFilteredGrades.value
 
-  // 每个学生取最高分
-  const bestByStudent: Record<string, { score: number; courseName: string; className: string }> = {}
+  // 按 (学生 + 课程) 去重取最高分，同一学生在不同课程中分别计数
+  const bestByStudentCourse: Record<string, { score: number; courseName: string; className: string }> = {}
   for (const g of list) {
-    const key = g.studentId
-    if (!bestByStudent[key] || g.totalScore > bestByStudent[key].score) {
-      bestByStudent[key] = { score: g.totalScore, courseName: g.courseName, className: g.className }
+    const key = `${g.studentId}_${g.courseId}`
+    if (!bestByStudentCourse[key] || g.totalScore > bestByStudentCourse[key].score) {
+      bestByStudentCourse[key] = { score: g.totalScore, courseName: g.courseName, className: g.className }
     }
   }
-  const bestScores = Object.values(bestByStudent).map(b => b.score)
-  const uniqueStudents = Object.keys(bestByStudent)
+  const entries = Object.values(bestByStudentCourse)
+  const bestScores = entries.map(b => b.score)
 
   const passedScores = bestScores.filter(s => s >= 60)
   const excellentScores = bestScores.filter(s => s >= 90)
 
-  // 分布图：无筛选→按课程，选课程→按班级，两者都选→分数段
+  // 分布图：按分数段统计
+  const ranges = [
+    { name: '90-100', min: 90, max: 100 },
+    { name: '80-89', min: 80, max: 89 },
+    { name: '60-79', min: 60, max: 79 },
+    { name: '0-59', min: 0, max: 59 },
+  ]
   let distribution: { name: string; count: number }[] = []
-  if (!filterForm.courseId) {
-    const courseMap: Record<string, number> = {}
-    for (const b of Object.values(bestByStudent)) {
-      const name = b.courseName || '未知课程'
-      courseMap[name] = (courseMap[name] || 0) + 1
-    }
-    distribution = Object.entries(courseMap).map(([name, count]) => ({ name, count }))
-  } else if (!filterForm.className) {
-    const classMap: Record<string, number> = {}
-    for (const b of Object.values(bestByStudent)) {
-      const name = b.className || '未知班级'
-      classMap[name] = (classMap[name] || 0) + 1
-    }
-    distribution = Object.entries(classMap).map(([name, count]) => ({ name, count }))
-  } else {
-    const distMap: Record<string, number> = { '90-100': 0, '80-89': 0, '70-79': 0, '60-69': 0, '0-59': 0 }
-    for (const s of bestScores) {
-      if (s >= 90) distMap['90-100']++
-      else if (s >= 80) distMap['80-89']++
-      else if (s >= 70) distMap['70-79']++
-      else if (s >= 60) distMap['60-69']++
-      else distMap['0-59']++
-    }
-    distribution = Object.entries(distMap).map(([name, count]) => ({ name, count }))
+  for (const r of ranges) {
+    const count = bestScores.filter(s => s >= r.min && s <= r.max).length
+    distribution.push({ name: r.name, count })
   }
 
   return {
-    totalStudents: uniqueStudents.length,
-    submittedCount: bestScores.length,
+    totalStudents: entries.length,
+    submittedCount: entries.length,
     averageScore: bestScores.length > 0 ? Math.round(bestScores.reduce((a, b) => a + b, 0) / bestScores.length * 10) / 10 : 0,
-    passRate: uniqueStudents.length > 0 ? Math.round(passedScores.length / uniqueStudents.length * 100) : 0,
-    excellentRate: uniqueStudents.length > 0 ? Math.round(excellentScores.length / uniqueStudents.length * 100) : 0,
+    passRate: entries.length > 0 ? Math.round(passedScores.length / entries.length * 100) : 0,
+    excellentRate: entries.length > 0 ? Math.round(excellentScores.length / entries.length * 100) : 0,
     distribution
   }
 })
 
 const editForm = reactive({
   homeworkScore: 0,
-  examScore: 0,
   remark: ''
 })
 
@@ -691,6 +625,7 @@ const handleSortChange = ({ prop, order }: any) => {
 
 const handleSizeChange = (size: number) => {
   pagination.pageSize = size
+  pagination.currentPage = 1
 }
 
 const handleCurrentChange = (page: number) => {
@@ -705,7 +640,6 @@ const viewDetail = (row: any) => {
 const editGrade = (row: any) => {
   currentStudent.value = row
   editForm.homeworkScore = row.homeworkScore
-  editForm.examScore = row.examScore
   editForm.remark = ''
   editDialogVisible.value = true
 }
@@ -713,10 +647,11 @@ const editGrade = (row: any) => {
 const saveGrade = async () => {
   if (currentStudent.value?.id) {
     try {
-      await overrideSubmissionScore(currentStudent.value.id, {
-        overallScore: editForm.homeworkScore,
-        overrideReason: editForm.remark || undefined
-      })
+      await overrideSubmissionScore(
+        currentStudent.value.id,
+        editForm.homeworkScore,
+        editForm.remark || ''
+      )
     } catch (e) { /* ignore */ }
   }
   ElMessage.success('成绩已保存')
@@ -727,11 +662,17 @@ const exportGrades = () => {
   ElMessage.success('成绩导出中...')
 }
 
+const route = useRoute()
+
 const refreshGrades = () => {
   loadGradeData()
 }
 
 onMounted(() => {
+  loadGradeData()
+})
+
+watch(() => route.path, () => {
   loadGradeData()
 })
 </script>
@@ -837,6 +778,11 @@ onMounted(() => {
   align-items: center;
 }
 
+.chart-controls {
+  display: flex;
+  align-items: center;
+}
+
 .chart-container {
   padding: 20px 0;
   min-height: 260px;
@@ -887,72 +833,11 @@ onMounted(() => {
 }
 
 .bar-count {
-  color: #fff;
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 600;
-}
-
-/* 饼图 */
-.pie-chart-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 40px;
-  padding: 10px;
-}
-
-.pie-visual {
-  flex-shrink: 0;
-}
-
-.pie-svg {
-  width: 180px;
-  height: 180px;
-}
-
-.pie-segment {
-  transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;
-}
-
-.pie-total {
-  font-size: 22px;
-  font-weight: 700;
-  fill: #303133;
-}
-
-.pie-total-label {
-  font-size: 12px;
-  fill: #909399;
-}
-
-.pie-legend {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.legend-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-}
-
-.legend-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.legend-name {
-  color: #606266;
-  min-width: 60px;
-}
-
-.legend-count {
-  color: #909399;
-  font-weight: 500;
+  margin-left: 6px;
+  white-space: nowrap;
 }
 
 .grade-list-card {

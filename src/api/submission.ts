@@ -1,42 +1,68 @@
-import { request } from './interceptors'
+import { request, axiosInstance } from './interceptors'
 
-// 获取我的提交
-export const getMySubmissions = async (params?: any) => {
+export const getMySubmissions = async (params?: {
+  assignment_id?: number
+}) => {
   return await request.get('/submissions/my', params)
 }
 
-// 获取提交详情
 export const getSubmissionDetail = async (submissionId: string) => {
   return await request.get(`/submissions/${submissionId}`)
 }
 
-// 创建提交到 B4 主数据库
 export const createSubmission = async (data: {
   question_id: string
   assignment_id: number
   code: string
   language: string
-  student_user_id: number
 }) => {
   return await request.post('/submissions', data)
 }
 
-// 获取作业全部提交
-export const getAssignmentSubmissions = async (assignmentId: string, params?: any) => {
-  return await request.get(`/submissions/assignment/${assignmentId}/all`, params)
+export const getAssignmentSubmissions = async (assignmentId: string | number) => {
+  return await request.get(`/submissions/assignment/${assignmentId}/all`)
 }
 
-// 更新提交结果
-export const updateSubmissionResult = async (submissionId: string, data: any) => {
-  return await request.put(`/submissions/${submissionId}/result`, data)
+export const updateSubmissionResult = async (submissionId: string, data: {
+  status: string
+  overallScore?: number
+  passedCount?: number
+  totalCount?: number
+  overallComment?: string
+  staticIssues?: { code: string; message: string }[]
+  caseResults?: {
+    case_id: string
+    description: string
+    passed: boolean
+    score: number
+    actual_output: string | null
+    expected_output: string | null
+    error: string | null
+    execution_time_ms: number
+  }[]
+  studentUserId?: number
+  assignmentId?: number
+  questionId?: string
+  code?: string
+  language?: string
+}) => {
+  return await request.patch(`/submissions/${submissionId}/result`, data)
 }
 
-// 手动修改提交分数
-export const overrideSubmissionScore = async (submissionId: string, data: any) => {
-  return await request.put(`/submissions/${submissionId}/override`, data)
+export const overrideSubmissionScore = async (submissionId: string, overrideScore: number, overrideReason: string) => {
+  return await axiosInstance.patch(
+    `/submissions/${submissionId}/override`,
+    null,
+    { params: { override_score: overrideScore, override_reason: overrideReason } }
+  )
 }
 
-// 获取作业提交统计
-export const getAssignmentStatistics = async (assignmentId: string) => {
+export const getAssignmentStatistics = async (assignmentId: string | number) => {
   return await request.get(`/submissions/statistics/assignment/${assignmentId}`)
+}
+
+export const exportSubmissionsExcel = async (assignmentId: string | number) => {
+  return await axiosInstance.get(`/submissions/export/assignment/${assignmentId}`, {
+    responseType: 'blob'
+  })
 }

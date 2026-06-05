@@ -45,14 +45,27 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../stores/user'
-import { User, ArrowRight, HomeFilled, Document, Files, PieChart, Setting, OfficeBuilding } from '@element-plus/icons-vue'
+import { getCurrentUser } from '../api/user'
+import { User, ArrowRight, HomeFilled, Document, Files, PieChart, OfficeBuilding } from '@element-plus/icons-vue'
 
 const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
+
+// 页面加载时从后端获取当前用户信息，确保显示真实用户名
+onMounted(async () => {
+  try {
+    const res = await getCurrentUser()
+    if (res.code === 200 && res.data) {
+      userStore.setUserInfo(res.data)
+    }
+  } catch (e) {
+    // 获取失败时使用 localStorage 中的缓存信息
+  }
+})
 
 const role = computed(() => userStore.userInfo?.role || 'student')
 
@@ -83,7 +96,6 @@ const menuItems = computed(() => {
       { path: '/admin/dashboard', label: '控制台', icon: HomeFilled },
       { path: '/admin/users', label: '用户管理', icon: User },
       { path: '/admin/students', label: '学生管理', icon: User },
-      { path: '/admin/settings', label: '系统设置', icon: Setting }
     ]
   }
   return menus[role.value] || []

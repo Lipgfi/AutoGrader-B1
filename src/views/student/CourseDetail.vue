@@ -214,7 +214,7 @@ const loadData = async () => {
     }
 
     // 班级信息（找到学生在此课程中的班级）
-    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
+    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data.classes || classesRes.data || []) : []
     const matchedClass = apiClasses.find((cls: any) => {
       const cid = cls.course_id || cls.courseId
       return String(cid) === String(courseId)
@@ -253,7 +253,7 @@ const loadData = async () => {
     } catch (e) { /* ignore */ }
 
     // 作业列表 — 仅显示当前课程班级的作业
-    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
+    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data.assignments || assignmentsRes.data || []) : []
     assignments.value = apiAssignments
       .filter((a: any) => !classId || String(a.class_id || a.classId) === String(classId))
       .map((a: any) => {

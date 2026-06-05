@@ -32,15 +32,15 @@
         <div class="role-tabs">
           <div class="role-label">选择身份</div>
           <el-radio-group v-model="loginForm.role" class="role-group">
-            <el-radio-button value="student">
+            <el-radio-button label="student">
               <el-icon><User /></el-icon>
               <span>学生</span>
             </el-radio-button>
-            <el-radio-button value="teacher">
+            <el-radio-button label="teacher">
               <el-icon><Reading /></el-icon>
               <span>教师</span>
             </el-radio-button>
-            <el-radio-button value="admin">
+            <el-radio-button label="admin">
               <el-icon><Setting /></el-icon>
               <span>管理员</span>
             </el-radio-button>
@@ -90,7 +90,7 @@
           <el-checkbox v-model="loginForm.remember" class="remember-checkbox">
             <span class="remember-text">记住密码</span>
           </el-checkbox>
-          <el-link type="primary" underline="never" class="forgot-link">
+          <el-link type="primary" :underline="false" class="forgot-link">
             忘记密码？
           </el-link>
         </div>
@@ -110,7 +110,7 @@
 
         <div class="register-link">
           <span class="register-text">还没有账号？</span>
-          <el-link type="primary" underline="never" @click="$router.push('/register')">
+          <el-link type="primary" :underline="false" @click="$router.push('/register')">
             立即注册
           </el-link>
         </div>

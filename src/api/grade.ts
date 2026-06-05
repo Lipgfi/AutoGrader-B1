@@ -1,16 +1,15 @@
 import { request } from './interceptors'
 
-// 获取我的成绩
-export const getMyGrades = async (params?: any) => {
+export const getMyGrades = async (params?: {
+  assignment_id?: number
+}) => {
   return await request.get('/grades/my', params)
 }
 
-// 获取班级成绩
-export const getClassGrades = async (classId: string, params?: any) => {
-  return await request.get(`/grades/class/${classId}`, params)
+export const getClassGrades = async (classId: string | number) => {
+  return await request.get(`/grades/class/${classId}`)
 }
 
-// 导出作业成绩
-export const exportAssignmentGrades = async (assignmentId: string) => {
+export const exportAssignmentGrades = async (assignmentId: string | number) => {
   return await request.get(`/grades/export/${assignmentId}`)
 }

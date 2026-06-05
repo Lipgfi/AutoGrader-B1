@@ -133,12 +133,6 @@ const routes = [
         name: 'AdminStudents',
         component: () => import('../views/admin/StudentManagement.vue'),
         meta: { title: '学生信息管理', role: 'admin' }
-      },
-      {
-        path: 'settings',
-        name: 'AdminSettings',
-        component: () => import('../views/admin/SystemSettings.vue'),
-        meta: { title: '系统设置', role: 'admin' }
       }
     ]
   },

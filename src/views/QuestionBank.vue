@@ -64,7 +64,8 @@
           <el-form :model="filterForm" inline class="filter-form">
             <el-form-item label="题目类型">
               <el-select v-model="filterForm.questionType" placeholder="全部类型" clearable>
-                <el-option label="编程题" :value="1" />
+                <el-option label="Python" :value="1" />
+                <el-option label="Shell" :value="2" />
                 <el-option label="填空题" :value="3" />
               </el-select>
             </el-form-item>
@@ -200,7 +201,8 @@
           <el-col :span="12">
             <el-form-item label="题目类型" prop="questionType">
               <el-select v-model="questionForm.questionType" placeholder="请选择题目类型">
-                <el-option label="编程题" :value="1" />
+                <el-option label="Python" :value="1" />
+                <el-option label="Shell" :value="2" />
                 <el-option label="填空题" :value="3" />
               </el-select>
             </el-form-item>
@@ -232,15 +234,7 @@
         </el-form-item>
         
         <!-- 编程题特有字段 -->
-        <template v-if="questionForm.questionType === 1">
-          <el-form-item label="编程语言" prop="language">
-            <el-select v-model="questionForm.language" placeholder="请选择编程语言">
-              <el-option label="Python" value="python" />
-              <el-option label="C" value="c" />
-              <el-option label="Shell" value="shell" />
-            </el-select>
-          </el-form-item>
-          
+        <template v-if="questionForm.questionType === 1 || questionForm.questionType === 2">
           <el-form-item label="测试用例">
             <div class="test-cases">
               <div
@@ -509,13 +503,14 @@ const categoryForm = reactive({
 })
 
 const getQuestionTypeName = (type: number): string => {
-  const types: Record<number, string> = { 1: '编程题', 3: '填空题' }
+  const types: Record<number, string> = { 1: 'Python', 2: 'Shell', 3: '填空题' }
   return types[type] || '未知'
 }
 
 const getQuestionTypeTag = (type: number): 'primary' | 'success' | 'warning' => {
   const tags: Record<number, 'primary' | 'success' | 'warning'> = {
-    1: 'primary',
+    1: '',
+    2: 'success',
     3: 'warning'
   }
   return tags[type] || 'primary'
@@ -694,9 +689,9 @@ const resetQuestionForm = () => {
 }
 
 // 前端表单 → B4 后端字段映射
-const typeMap: Record<number, string> = { 1: 'COMMAND_LINE', 2: 'FILE_IO', 3: 'INTERFACE' }
+const typeMap: Record<number, string> = { 1: 'INTERFACE', 2: 'COMMAND_LINE' }
 const difficultyMap: Record<number, string> = { 1: 'EASY', 2: 'MEDIUM', 3: 'HARD' }
-const reverseTypeMap: Record<string, number> = { COMMAND_LINE: 1, FILE_IO: 2, INTERFACE: 3 }
+const reverseTypeMap: Record<string, number> = { INTERFACE: 1, COMMAND_LINE: 2 }
 const reverseDifficultyMap: Record<string, number> = { EASY: 1, MEDIUM: 2, HARD: 3 }
 
 const buildPayload = () => {
@@ -713,9 +708,9 @@ const buildPayload = () => {
   return {
     title: questionForm.title,
     description: questionForm.content,
-    type: typeMap[questionForm.questionType] || 'COMMAND_LINE',
+    type: questionForm.questionType === 2 ? 'COMMAND_LINE' : 'INTERFACE',
     difficulty: difficultyMap[questionForm.difficulty] || 'EASY',
-    language: questionForm.language || 'python',
+    language: questionForm.questionType === 2 ? 'shell' : 'python',
     time_limit: questionForm.timeLimit || 5,
     memory_limit: questionForm.memoryLimit || 256,
     starter_code: '',
@@ -766,15 +761,13 @@ const saveQuestion = async () => {
 
             // 同步导入到 B3 判题引擎
             try {
-              // C/C++ 语言走 api 类型（编译运行），其他走 shell 类型
-              const isCLang = questionForm.language === 'c' || questionForm.language === 'cpp'
-              const b3Type = isCLang ? 'api' : (typeMap[questionForm.questionType] || 'command')
-              const b3Language = isCLang ? questionForm.language : 'shell'
-              const b3Metadata: any = isCLang ? {
-                language: questionForm.language,
-                compile_cmd: 'gcc',
-                compile_args: ['-o', 'program', 'submission.c', '-Wall'],
-                run_cmd: './program',
+              // Python → api 类型（函数执行），Shell → command 类型
+              const isPython = questionForm.questionType === 1
+              const b3Type = isPython ? 'api' : 'command'
+              const b3Language = isPython ? 'python' : 'shell'
+              const b3Metadata: any = isPython ? {
+                entry_function: 'solve',
+                python_command: 'python3',
               } : {}
 
               const b3Payload = {
@@ -856,7 +849,7 @@ const loadQuestions = async () => {
     }
     const response = await getQuestions(params)
     if (response.code === 200 && response.data) {
-      const list = response.data.questions || response.data.data || response.data || []
+      const list = response.data.questions || response.data || []
       questionList.value = (Array.isArray(list) ? list : []).map((q: any) => ({
         id: q.question_id || q.id,
         title: q.title || '',

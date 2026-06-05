@@ -35,7 +35,7 @@
       />
     </div>
     
-    <el-card class="assignments-card">
+    <el-card class="assignments-card" v-loading="loading">
       <el-table :data="filteredAssignments" style="width: 100%">
         <el-table-column prop="title" label="作业名称" min-width="200">
           <template #default="scope">
@@ -289,39 +289,6 @@
           </div>
         </div>
         
-        <div class="score-distribution">
-          <h3>分数分布</h3>
-          <div class="distribution-bars">
-            <div class="distribution-item">
-              <span class="range">90-100</span>
-              <div class="bar-container">
-                <div class="bar excellent" :style="{ width: '30%' }"></div>
-              </div>
-              <span class="count">15人</span>
-            </div>
-            <div class="distribution-item">
-              <span class="range">80-89</span>
-              <div class="bar-container">
-                <div class="bar good" :style="{ width: '25%' }"></div>
-              </div>
-              <span class="count">12人</span>
-            </div>
-            <div class="distribution-item">
-              <span class="range">60-79</span>
-              <div class="bar-container">
-                <div class="bar average" :style="{ width: '20%' }"></div>
-              </div>
-              <span class="count">10人</span>
-            </div>
-            <div class="distribution-item">
-              <span class="range">60以下</span>
-              <div class="bar-container">
-                <div class="bar poor" :style="{ width: '10%' }"></div>
-              </div>
-              <span class="count">5人</span>
-            </div>
-          </div>
-        </div>
       </div>
       
       <template #footer>
@@ -333,7 +300,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   getAssignments,
@@ -345,6 +312,7 @@ import {
 import { getCourses } from '../../api/course'
 import { getQuestions } from '../../api/question'
 import { getClasses } from '../../api/class'
+import { useRoute } from 'vue-router'
 import { getAssignmentStatistics } from '../../api/submission'
 import { Plus, Lock } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -385,6 +353,7 @@ const classes = ref<any[]>([])
 
 const questions = ref<any[]>([])
 
+const loading = ref(false)
 const assignments = ref<any[]>([])
 
 const filteredClasses = computed(() => {
@@ -504,20 +473,27 @@ const saveDraft = async () => {
 
 // 加载数据
 const loadData = async () => {
+  loading.value = true
   try {
-    // 加载课程
-    const coursesResponse = await getCourses()
+    // 并行加载所有基础数据
+    const [coursesResponse, classesResponse, questionsResponse, assignmentsResponse] = await Promise.all([
+      getCourses(),
+      getClasses(),
+      getQuestions(),
+      getAssignments()
+    ])
+
     if (coursesResponse.code === 200 && coursesResponse.data) {
-      courses.value = (coursesResponse.data || []).map((c: any) => ({
+      const coursesList = coursesResponse.data.courses || coursesResponse.data || []
+      courses.value = (Array.isArray(coursesList) ? coursesList : []).map((c: any) => ({
         id: c.course_id || c.id,
         name: c.course_name || c.name
       }))
     }
 
-    // 加载班级
-    const classesResponse = await getClasses()
     if (classesResponse.code === 200 && classesResponse.data) {
-      classes.value = (classesResponse.data || []).map((c: any) => ({
+      const classesList = classesResponse.data.classes || classesResponse.data || []
+      classes.value = (Array.isArray(classesList) ? classesList : []).map((c: any) => ({
         id: c.class_id || c.id,
         name: c.class_name || c.name,
         courseId: c.course_id || c.courseId,
@@ -525,19 +501,17 @@ const loadData = async () => {
       }))
     }
 
-    // 加载题目
-    const questionsResponse = await getQuestions()
     if (questionsResponse.code === 200 && questionsResponse.data) {
-      questions.value = (questionsResponse.data || []).map((q: any) => ({
+      const questionsList = questionsResponse.data.questions || questionsResponse.data || []
+      questions.value = (Array.isArray(questionsList) ? questionsList : []).map((q: any) => ({
         id: q.question_id || q.id,
         title: q.title
       }))
     }
 
-    // 加载作业和统计数据
-    const assignmentsResponse = await getAssignments()
     if (assignmentsResponse.code === 200 && assignmentsResponse.data) {
-      const rawList = (assignmentsResponse.data || []).map((a: any) => ({
+      const assignmentsList = assignmentsResponse.data.assignments || assignmentsResponse.data || []
+      const rawList = (Array.isArray(assignmentsList) ? assignmentsList : []).map((a: any) => ({
         ...a,
         id: a.assignment_id || a.id,
         title: a.title || a.name || '',
@@ -558,7 +532,7 @@ const loadData = async () => {
         avgScore: 0
       }))
 
-      // 为每个作业加载统计数据
+      // 并行加载所有作业的统计数据
       const statsPromises = rawList.map(async (a: any) => {
         try {
           const statsRes = await getAssignmentStatistics(String(a.id))
@@ -579,10 +553,18 @@ const loadData = async () => {
     }
   } catch (error) {
     console.error('加载数据失败', error)
+  } finally {
+    loading.value = false
   }
 }
 
+const route = useRoute()
+
 onMounted(() => {
+  loadData()
+})
+
+watch(() => route.path, () => {
   loadData()
 })
 
@@ -864,56 +846,6 @@ const deleteAssignment = async (assignment: any) => {
   font-size: var(--font-size-sm);
   color: var(--text-tertiary);
   margin-top: var(--spacing-sm);
-}
-
-.score-distribution h3 {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin: 0 0 var(--spacing-md) 0;
-}
-
-.distribution-bars {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-}
-
-.distribution-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-}
-
-.range {
-  width: 60px;
-  font-size: var(--font-size-sm);
-  color: var(--text-secondary);
-}
-
-.bar-container {
-  flex: 1;
-  height: 20px;
-  background-color: var(--bg-tertiary);
-  border-radius: var(--border-radius-sm);
-  overflow: hidden;
-}
-
-.bar {
-  height: 100%;
-  border-radius: var(--border-radius-sm);
-}
-
-.bar.excellent { background-color: var(--success-color); }
-.bar.good { background-color: var(--primary-color); }
-.bar.average { background-color: var(--warning-color); }
-.bar.poor { background-color: var(--danger-color); }
-
-.count {
-  width: 50px;
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-  text-align: right;
 }
 
 @media (max-width: 768px) {

@@ -346,7 +346,8 @@ const loadDropdowns = async () => {
       getQuestions()
     ])
     if (coursesRes.code === 200 && coursesRes.data) {
-      courses.value = (coursesRes.data || []).map((c: any) => ({
+      const coursesList = coursesRes.data.courses || coursesRes.data || []
+      courses.value = (Array.isArray(coursesList) ? coursesList : []).map((c: any) => ({
         id: c.course_id || c.id,
         name: c.course_name || c.name
       }))
@@ -355,7 +356,8 @@ const loadDropdowns = async () => {
       // assignments need class-id for lookup
     }
     if (assignmentsRes.code === 200 && assignmentsRes.data) {
-      assignments.value = (assignmentsRes.data || []).map((a: any) => ({
+      const assignmentsList = assignmentsRes.data.assignments || assignmentsRes.data || []
+      assignments.value = (Array.isArray(assignmentsList) ? assignmentsList : []).map((a: any) => ({
         id: a.assignment_id || a.id,
         title: a.title,
         courseId: a.class_id,
@@ -446,7 +448,8 @@ const handleSubmit = async () => {
   } catch (error: any) {
     console.error('提交失败', error)
     submitting.value = false
-    ElMessage.error(error.message || '提交失败，请重试')
+    const detail = error?.response?.data?.detail || error?.response?.data?.msg || error?.message || ''
+    ElMessage.error(detail || '提交失败，请重试')
   }
 }
 

@@ -153,12 +153,6 @@
                   <el-button type="primary" link size="small" @click="showAddStudentDialog(scope.row)">
                     添加学生
                   </el-button>
-                  <el-button type="primary" link size="small" @click="editClass(scope.row)">
-                    编辑
-                  </el-button>
-                  <el-button type="danger" link size="small" @click="deleteClass(scope.row)">
-                    删除
-                  </el-button>
                 </template>
               </el-table-column>
             </el-table>
@@ -381,12 +375,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive, onMounted } from 'vue'
+import { ref, computed, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { getCourses, createCourse, updateCourse, deleteCourse } from '../../api/course'
 import { getAssignments } from '../../api/assignment'
-import { getClasses, createClass, updateClass, getClassStudents, deleteClass as deleteClassApi, addStudentToClass } from '../../api/class'
+import { getClasses, createClass, getClassStudents, addStudentToClass } from '../../api/class'
 import { getStudents, importStudents as importStudentsApi } from '../../api/student'
 import { Search } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -617,8 +611,8 @@ const loadCourses = async () => {
       getAssignments()
     ])
 
-    const apiClasses = (coursesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
-    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
+    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data.classes || classesRes.data || []) : []
+    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data.assignments || assignmentsRes.data || []) : []
 
     // 按 course_id 统计班级数
     const classCountByCourse: Record<string, number> = {}
@@ -632,28 +626,21 @@ const loadCourses = async () => {
       }
     }
 
-    // 优化：先建立 class_id -> course_id 的映射，将时间复杂度从 O(n*m) 降为 O(n+m)
-    const classIdToCourseId = new Map<string, string>()
-    for (const cls of apiClasses) {
-      const classId = String(cls.class_id || cls.id)
-      const courseId = String(cls.course_id || cls.courseId)
-      if (classId && courseId) {
-        classIdToCourseId.set(classId, courseId)
-      }
-    }
-
     // 按 course_id 统计作业数（通过 class_id → course_id 关联）
     const assignmentCountByCourse: Record<string, number> = {}
     for (const a of apiAssignments) {
-      const classId = String(a.class_id || a.classId)
-      const cid = classIdToCourseId.get(classId)
-      if (cid) {
-        assignmentCountByCourse[cid] = (assignmentCountByCourse[cid] || 0) + 1
+      const cls = apiClasses.find((c: any) => String(c.class_id || c.id) === String(a.class_id || a.classId))
+      if (cls) {
+        const cid = String(cls.course_id || cls.courseId || '')
+        if (cid) {
+          assignmentCountByCourse[cid] = (assignmentCountByCourse[cid] || 0) + 1
+        }
       }
     }
 
     if (coursesRes.code === 200 && coursesRes.data) {
-      courses.value = (coursesRes.data || []).map((course: any) => {
+      const coursesList = coursesRes.data.courses || coursesRes.data || []
+      courses.value = (Array.isArray(coursesList) ? coursesList : []).map((course: any) => {
         const cid = String(course.course_id || course.id || '')
         return {
           ...course,
@@ -678,6 +665,12 @@ onMounted(async () => {
   if (isClassPage.value && !selectedCourseId.value && courses.value.length > 0) {
     selectedCourseId.value = courses.value[0].id
   }
+  await loadClasses()
+})
+
+// 路由变化时刷新数据（课程/班级页面共用同一组件）
+watch(() => route.path, async () => {
+  await loadCourses()
   await loadClasses()
 })
 
@@ -721,19 +714,8 @@ const saveClass = async () => {
     await classFormRef.value.validate()
 
     if (editingClass.value) {
-      const classId = editingClass.value.id || editingClass.value.class_id
-      const response = await updateClass(String(classId), {
-        className: classForm.name,
-        classCode: classForm.classCode
-      })
-
-      if ((response.code === 200 || response.code === 201) && response.data) {
-        ElMessage.success('班级更新成功')
-        await loadClasses()
-        await loadCourses()
-      } else {
-        ElMessage.error('班级更新失败')
-      }
+      ElMessage.warning('班级编辑功能暂不支持')
+      return
     } else {
       const response = await createClass({
         courseId: classForm.courseId,
@@ -756,22 +738,6 @@ const saveClass = async () => {
     console.error('班级保存失败', error)
     ElMessage.error('班级保存失败')
   }
-}
-
-const deleteClass = (cls: any) => {
-  ElMessageBox.confirm(`确定要删除班级"${cls.name}"吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning'
-  }).then(async () => {
-    try {
-      await deleteClassApi(String(cls.id))
-      await loadClasses()
-      ElMessage.success('删除成功')
-    } catch (e) {
-      ElMessage.error('删除失败')
-    }
-  })
 }
 
 const importStudents = (cls: any) => {
@@ -1070,15 +1036,13 @@ const confirmImport = async () => {
   }
 }
 
-// 限制并发请求数量，避免大量请求导致超时
-const concurrentRequestLimit = 5
-
 const loadClasses = async () => {
   try {
     const response = await getClasses()
     if (response.code === 200 && response.data) {
       const courseNameById = new Map(courses.value.map((course: any) => [String(course.id), course.name]))
-      const list = (response.data || []).map((cls: any) => ({
+      const classesList = response.data.classes || response.data || []
+      const list = (Array.isArray(classesList) ? classesList : []).map((cls: any) => ({
         ...cls,
         id: cls.class_id || cls.id,
         name: cls.class_name || cls.name,
@@ -1088,24 +1052,15 @@ const loadClasses = async () => {
         createTime: cls.create_time || ''
       }))
 
-      // 优化：限制并发请求数量，避免大量请求导致超时
-      const chunks: any[][] = []
-      for (let i = 0; i < list.length; i += concurrentRequestLimit) {
-        chunks.push(list.slice(i, i + concurrentRequestLimit))
-      }
-
-      for (const chunk of chunks) {
-        await Promise.all(chunk.map(async (c: any) => {
-          try {
-            const sRes = await getClassStudents(String(c.id))
-            if (sRes.code === 200 && sRes.data) {
-              c.studentCount = (sRes.data || []).length
-            }
-          } catch (e) { 
-            console.warn('加载班级学生数失败:', c.id, e)
+      // 异步加载每个班级的学生数
+      await Promise.all(list.map(async (c: any) => {
+        try {
+          const sRes = await getClassStudents(String(c.id))
+          if (sRes.code === 200 && sRes.data) {
+            c.studentCount = (sRes.data || []).length
           }
-        }))
-      }
+        } catch (e) { /* ignore */ }
+      }))
 
       classes.value = list
     }

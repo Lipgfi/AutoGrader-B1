@@ -1,6 +1,5 @@
 import axios from 'axios'
 
-// B3 判题服务配置
 const b3Instance = axios.create({
   baseURL: '/api/v1/b3',
   timeout: 60000,
@@ -9,7 +8,6 @@ const b3Instance = axios.create({
   }
 })
 
-// 请求拦截器
 b3Instance.interceptors.request.use(
   (config) => {
     console.log('[B3 Request]', config.method?.toUpperCase(), config.url, config.data)
@@ -20,7 +18,6 @@ b3Instance.interceptors.request.use(
   }
 )
 
-// 响应拦截器
 b3Instance.interceptors.response.use(
   (response) => {
     console.log('[B3 Response]', response.status, response.data)
@@ -32,7 +29,6 @@ b3Instance.interceptors.response.use(
   }
 )
 
-// B3 评测请求类型
 export interface B3EvaluateRequest {
   question_id: string
   submitted_code: string
@@ -40,7 +36,6 @@ export interface B3EvaluateRequest {
   language: string
 }
 
-// B3 评测响应类型（对齐 B3 后端 EvaluationCaseResultRead）
 export interface B3CaseResult {
   case_id: string
   description: string
@@ -63,17 +58,14 @@ export interface B3EvaluateResponse {
   case_results: B3CaseResult[]
 }
 
-// 获取题目列表
 export const getB3Questions = async () => {
   return await b3Instance.get('/questions')
 }
 
-// 获取题目详情
 export const getB3QuestionDetail = async (questionId: string) => {
   return await b3Instance.get(`/questions/${questionId}`)
 }
 
-// 创建题目到 B3 判题引擎
 export const createB3Question = async (data: {
   id: string
   title: string
@@ -88,23 +80,19 @@ export const createB3Question = async (data: {
   return await b3Instance.post('/questions', data)
 }
 
-// 获取题目测试用例
 export const getB3QuestionCases = async (questionId: string) => {
   return await b3Instance.get(`/questions/${questionId}/cases`)
 }
 
-// 评测提交
 export const evaluateSubmission = async (data: B3EvaluateRequest): Promise<B3EvaluateResponse> => {
   const response = await b3Instance.post('/evaluate', data)
   return response as unknown as B3EvaluateResponse
 }
 
-// 参考答案自测
 export const evaluateAnswer = async (questionId: string) => {
   return await b3Instance.post(`/evaluate/answer/${questionId}`)
 }
 
-// 健康检查
 export const b3HealthCheck = async () => {
   return await b3Instance.get('/health')
 }

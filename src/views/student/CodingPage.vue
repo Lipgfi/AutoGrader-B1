@@ -45,8 +45,8 @@
       <div class="problem-panel" :style="{ width: leftPanelWidth + '%' }">
         <div class="panel-tabs">
           <el-radio-group v-model="problemTab" size="small">
-            <el-radio-button value="description">题目描述</el-radio-button>
-            <el-radio-button value="testcases">测试用例</el-radio-button>
+            <el-radio-button label="description">题目描述</el-radio-button>
+            <el-radio-button label="testcases">测试用例</el-radio-button>
           </el-radio-group>
         </div>
         
@@ -108,7 +108,7 @@
             <div class="testcases-panel">
               <div class="testcase-tabs">
                 <el-radio-group v-model="selectedTestcase" size="small">
-                  <el-radio-button v-for="tc in testcases" :key="tc.id" :value="tc.id">
+                  <el-radio-button v-for="tc in testcases" :key="tc.id" :label="tc.id">
                     用例 {{ tc.id }}
                   </el-radio-button>
                 </el-radio-group>
@@ -217,7 +217,7 @@
             <span class="divider">|</span>
             <span>用时 {{ record.runtime }}ms</span>
           </div>
-          <div v-if="record.id === currentRecordId && record.code" class="history-code">
+          <div v-if="record.code" class="history-code" @click.stop>
             <pre class="code-preview">{{ record.code }}</pre>
           </div>
         </el-card>
@@ -247,6 +247,15 @@
           </div>
         </div>
         
+        <div v-if="evaluationResult.staticIssues?.length || evaluationResult.overallComment" class="result-errors">
+          <div v-for="(issue, si) in evaluationResult.staticIssues" :key="'si-' + si" class="static-issue">
+            <el-alert :title="issue.message" type="error" :closable="false" show-icon />
+          </div>
+          <div v-if="evaluationResult.overallComment" class="overall-comment">
+            <el-alert :title="evaluationResult.overallComment" type="warning" :closable="false" />
+          </div>
+        </div>
+
         <div class="result-stats">
           <div class="stat-item">
             <span class="stat-value">{{ evaluationResult.passedCases }}/{{ evaluationResult.totalCases }}</span>
@@ -282,6 +291,9 @@
                 </el-tag>
               </div>
               <div class="case-details" v-if="!tc.passed">
+                <div v-if="tc.error" class="case-row">
+                  <el-alert :title="'运行错误: ' + tc.error" type="error" :closable="false" show-icon />
+                </div>
                 <div class="case-row">
                   <span class="case-label">输入:</span>
                   <pre class="case-code">{{ tc.input }}</pre>
@@ -292,7 +304,7 @@
                 </div>
                 <div class="case-row">
                   <span class="case-label">实际输出:</span>
-                  <pre class="case-code actual">{{ tc.actualOutput }}</pre>
+                  <pre class="case-code actual">{{ tc.actualOutput || '(无输出/执行异常)' }}</pre>
                 </div>
               </div>
             </div>
@@ -611,7 +623,8 @@ const submitCode = async () => {
     try {
       const asgnRes = await getAssignments()
       if (asgnRes.code === 200 && asgnRes.data) {
-        const match = (asgnRes.data || []).find((a: any) => a.question_id === questionId.value)
+        const list = asgnRes.data.assignments || asgnRes.data || []
+        const match = list.find((a: any) => a.question_id === questionId.value)
         if (match) {
           assignmentId = String(match.assignment_id || match.id)
         }
@@ -631,7 +644,9 @@ const submitCode = async () => {
         submissionId = createRes?.data?.submission_id || ''
         console.log('[CodingPage] 提交记录已创建:', submissionId)
       } catch (e: any) {
-        console.error('[CodingPage] 创建提交记录失败:', e?.response?.status, e?.response?.data || e)
+        const detail = e?.response?.data?.detail || e?.response?.data?.msg || e?.message || ''
+        console.error('[CodingPage] 创建提交记录失败:', detail)
+        ElMessage.warning(detail || '提交记录创建失败')
       }
     } else {
       console.warn('[CodingPage] 未找到对应作业，跳过创建提交记录')
@@ -654,6 +669,11 @@ const submitCode = async () => {
       runtime: b3Result.runtime || 0,
       memory: b3Result.memory || 0,
       ranking: b3Result.ranking || 0,
+      overallComment: b3Result.overall_comment || '',
+      staticIssues: (b3Result.static_issues || []).map((si: any) => ({
+        code: si.code || '',
+        message: si.message || '',
+      })),
       testCases: (b3Result.case_results || []).map((cr: any, index: number) => ({
         id: cr.case_id || index + 1,
         input: cr.description || cr.input || `测试用例 ${index + 1}`,
@@ -671,7 +691,8 @@ const submitCode = async () => {
       status: evaluationResult.value?.passed ? 'passed' : 'failed',
       score: b3Result.overall_score || 0,
       language: selectedLanguage.value,
-      runtime: b3Result.runtime || 0
+      runtime: b3Result.runtime || 0,
+      code: code.value,
     })
 
     // 3. 将 B3 评测结果更新到 B4 提交记录
@@ -694,14 +715,17 @@ const submitCode = async () => {
           }))
         })
         console.log('[CodingPage] 评测结果已更新到数据库')
-      } catch (e) {
-        console.error('[CodingPage] 更新评测结果失败:', e)
+      } catch (e: any) {
+        const detail = e?.response?.data?.detail || e?.message || ''
+        console.error('[CodingPage] 更新评测结果失败:', detail)
+        ElMessage.warning(detail || '评测结果同步失败')
       }
     }
 
     showResult.value = true
-  } catch (error) {
-    ElMessage.error('提交失败，请稍后重试')
+  } catch (error: any) {
+    const detail = error?.response?.data?.detail || error?.response?.data?.msg || error?.message || ''
+    ElMessage.error(detail || '提交失败，请稍后重试')
     console.error('[CodingPage] 提交代码失败:', error)
   } finally {
     submitting.value = false
@@ -755,7 +779,7 @@ const loadSubmissionHistory = async () => {
         .map((s: any) => ({
           id: s.submission_id || '',
           time: s.submitted_at ? new Date(s.submitted_at).toLocaleString() : '',
-          status: (s.overall_score ?? 0) >= 60 ? 'passed' : 'failed',
+          status: (s.passed_count || 0) >= (s.total_count || 1) ? 'passed' : 'failed',
           score: s.overall_score ?? 0,
           language: s.language || '',
           code: s.code || '',
@@ -1245,6 +1269,13 @@ onUnmounted(() => {
 
 .score-unit {
   font-size: 14px;
+}
+
+.result-errors {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .result-stats {

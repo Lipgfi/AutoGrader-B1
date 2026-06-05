@@ -1,34 +1,14 @@
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import axios, { AxiosInstance, AxiosResponse } from 'axios'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '../stores/user'
-import userMock from '../mock/user'
-import courseMock from '../mock/course'
-import assignmentMock from '../mock/assignment'
-import gradeMock from '../mock/grade'
-import studentMock from '../mock/student'
 import router from '../router'
-
-// 合并所有mock接口
-const allMocks = [
-  ...userMock,
-  ...courseMock,
-  ...assignmentMock,
-  ...gradeMock,
-  ...studentMock
-]
 
 // 创建axios实例
 const apiBaseURL = import.meta.env.VITE_B4_API_BASE_URL || 'http://127.0.0.1:8000/api/v1'
 
 export const axiosInstance: AxiosInstance = axios.create({
   baseURL: apiBaseURL,
-  timeout: 10000
-  // ============================================
-  // 修复: 移除全局 Content-Type，让请求拦截器根据数据类型动态设置
-  // ============================================
-  // 原问题：全局设置 'Content-Type': 'application/json' 会覆盖 FormData 的 multipart/form-data
-  // 当上传文件时，浏览器需要自动设置 Content-Type: multipart/form-data; boundary=...
-  // 如果全局强制为 application/json，后端就无法正确解析文件上传
+  timeout: 30000
 })
 
 // 请求拦截器
@@ -39,8 +19,6 @@ axiosInstance.interceptors.request.use(
       config.headers.Authorization = `Bearer ${userStore.token}`
     }
 
-    // FormData 时让浏览器自动处理 multipart/form-data（不设置 Content-Type）
-    // 其他情况默认使用 application/json
     if (config.data instanceof FormData) {
       delete config.headers['Content-Type']
     } else if (!config.headers['Content-Type']) {
@@ -64,45 +42,42 @@ axiosInstance.interceptors.response.use(
   (error) => {
     console.error('[Response Error]', error)
     if (error.response) {
-      // 新增：打印完整的后端返回数据，方便调试
       console.error('[Response Error Status]', error.response.status)
       console.error('[Response Error Data]', JSON.stringify(error.response.data, null, 2))
       console.error('[Response Error Headers]', JSON.stringify(error.response.headers, null, 2))
 
+      const data = error.response.data
+      const backendMsg = typeof data === 'string' ? data : (data?.detail || data?.msg || data?.message || '')
+
       switch (error.response.status) {
         case 401:
-          ElMessage.error('未授权，请重新登录')
+          ElMessage.error(backendMsg || '未授权，请重新登录')
           const userStore = useUserStore()
           userStore.logout()
           router.push('/login')
           break
         case 403:
-          ElMessage.error('拒绝访问')
+          ElMessage.error(backendMsg || '拒绝访问')
           break
         case 404:
-          ElMessage.error('请求的资源不存在')
+          ElMessage.error(backendMsg || '请求的资源不存在')
           break
         case 400: {
-          const detail = error.response.data?.detail || error.response.data?.msg || ''
-          if (detail) {
-            ElMessage.error(detail)
-          } else if (error.response.data?.data?.errors) {
-            const msgs = error.response.data.data.errors.map((e: any) => e.message).join('; ')
+          if (backendMsg) {
+            ElMessage.error(backendMsg)
+          } else if (data?.data?.errors) {
+            const msgs = data.data.errors.map((e: any) => e.message).join('; ')
             ElMessage.error(msgs || '请求参数错误')
-          } else if (error.response.data?.message) {
-            ElMessage.error(error.response.data.message)
-          } else if (typeof error.response.data === 'string') {
-            ElMessage.error(error.response.data)
           } else {
             ElMessage.error('请求参数错误')
           }
           break
         }
         case 500:
-          ElMessage.error('服务器错误')
+          ElMessage.error(backendMsg || '服务器内部错误')
           break
         default:
-          ElMessage.error(error.response.data?.detail || error.response.data?.msg || error.response.data?.message || '请求失败')
+          ElMessage.error(backendMsg || '请求失败')
       }
     } else {
       ElMessage.error('网络连接失败，请检查网络')
@@ -111,102 +86,24 @@ axiosInstance.interceptors.response.use(
   }
 )
 
-// Mock请求处理函数
-const mockRequest = (url: string, method: string, data?: any) => {
-  const fullUrl = '/api/v1' + url
-  console.log('[Mock] 检查请求:', fullUrl, method)
-
-  const mock = allMocks.find(m => {
-    const mockUrl = m.url
-    const mockMethod = m.method?.toLowerCase()
-    const matchMethod = mockMethod === method.toLowerCase()
-
-    let matchUrl = false
-    if (mockUrl.includes('*')) {
-      const regex = new RegExp('^' + mockUrl.replace(/\*/g, '[^/]+') + '$')
-      matchUrl = regex.test(fullUrl)
-    } else {
-      matchUrl = mockUrl === fullUrl
-    }
-
-    console.log('[Mock] 检查接口:', mockUrl, mockMethod, '匹配:', matchUrl && matchMethod)
-
-    return matchUrl && matchMethod
-  })
-
-  if (mock && mock.response) {
-    console.log('[Mock] 拦截到请求:', fullUrl, method)
-    const response = mock.response({ body: data, query: data })
-    console.log('[Mock] 返回响应:', response)
-    return Promise.resolve(response)
-  }
-
-  console.warn('[Mock] 未找到匹配的接口:', fullUrl, method)
-  return Promise.reject(new Error(`Mock接口未找到: ${method} ${fullUrl}`))
-}
-
-// 检查是否启用Mock（默认禁用）
-const enableMock = import.meta.env.VITE_ENABLE_MOCK === 'true'
-
-// 封装的request对象
 export const request = {
   get: async (url: string, params?: any) => {
-    if (enableMock) {
-      try {
-        return await mockRequest(url, 'get', params)
-      } catch (mockError) {
-        console.log('[Request] Mock失败，尝试真实请求')
-        return await axiosInstance.get(url, { params })
-      }
-    }
     return await axiosInstance.get(url, { params })
   },
 
   post: async (url: string, data?: any) => {
-    if (enableMock) {
-      try {
-        return await mockRequest(url, 'post', data)
-      } catch (mockError) {
-        console.log('[Request] Mock失败，尝试真实请求')
-        return await axiosInstance.post(url, data)
-      }
-    }
     return await axiosInstance.post(url, data)
   },
 
   put: async (url: string, data?: any) => {
-    if (enableMock) {
-      try {
-        return await mockRequest(url, 'put', data)
-      } catch (mockError) {
-        console.log('[Request] Mock失败，尝试真实请求')
-        return await axiosInstance.put(url, data)
-      }
-    }
     return await axiosInstance.put(url, data)
   },
 
   patch: async (url: string, data?: any) => {
-    if (enableMock) {
-      try {
-        return await mockRequest(url, 'patch', data)
-      } catch (mockError) {
-        console.log('[Request] Mock失败，尝试真实请求')
-        return await axiosInstance.patch(url, data)
-      }
-    }
     return await axiosInstance.patch(url, data)
   },
 
   delete: async (url: string, params?: any) => {
-    if (enableMock) {
-      try {
-        return await mockRequest(url, 'delete', params)
-      } catch (mockError) {
-        console.log('[Request] Mock失败，尝试真实请求')
-        return await axiosInstance.delete(url, { params })
-      }
-    }
     return await axiosInstance.delete(url, { params })
   }
 }

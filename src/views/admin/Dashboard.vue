@@ -20,191 +20,188 @@
     <div class="stats-overview">
       <el-card class="stat-card">
         <div class="stat-content">
-          <div class="stat-icon primary">
-            <el-icon :size="28"><User /></el-icon>
+          <div class="stat-icon" style="background-color: var(--primary-bg);">
+            <el-icon :size="28" style="color: var(--primary-color);"><User /></el-icon>
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ stats.totalUsers }}</span>
             <span class="stat-label">用户总数</span>
           </div>
         </div>
+        <div class="stat-footer">
+          <span :class="['trend', monthlyChanges.users >= 0 ? 'up' : 'down']">
+            <el-icon><Top v-if="monthlyChanges.users >= 0" /><Bottom v-else /></el-icon>
+            {{ monthlyChanges.users >= 0 ? '+' : '' }}{{ monthlyChanges.users }}%
+          </span>
+          <span class="period">较上月</span>
+        </div>
       </el-card>
 
       <el-card class="stat-card">
         <div class="stat-content">
-          <div class="stat-icon success">
-            <el-icon :size="28"><Reading /></el-icon>
+          <div class="stat-icon" style="background-color: var(--success-bg);">
+            <el-icon :size="28" style="color: var(--success-color);"><Reading /></el-icon>
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ stats.totalCourses }}</span>
             <span class="stat-label">课程总数</span>
           </div>
         </div>
+        <div class="stat-footer">
+          <span :class="['trend', monthlyChanges.courses >= 0 ? 'up' : 'down']">
+            <el-icon><Top v-if="monthlyChanges.courses >= 0" /><Bottom v-else /></el-icon>
+            {{ monthlyChanges.courses >= 0 ? '+' : '' }}{{ monthlyChanges.courses }}%
+          </span>
+          <span class="period">较上月</span>
+        </div>
       </el-card>
       
       <el-card class="stat-card">
         <div class="stat-content">
-          <div class="stat-icon warning">
-            <el-icon :size="28"><Document /></el-icon>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ stats.totalAssignments }}</span>
-            <span class="stat-label">作业总数</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon danger">
-            <el-icon :size="28"><EditPen /></el-icon>
+          <div class="stat-icon" style="background-color: var(--warning-bg);">
+            <el-icon :size="28" style="color: var(--warning-color);"><Document /></el-icon>
           </div>
           <div class="stat-info">
             <span class="stat-value">{{ stats.totalSubmissions }}</span>
             <span class="stat-label">提交总数</span>
           </div>
         </div>
-      </el-card>
-
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon info">
-            <el-icon :size="28"><User /></el-icon>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ stats.totalStudents }}</span>
-            <span class="stat-label">学生数</span>
-          </div>
+        <div class="stat-footer">
+          <span :class="['trend', monthlyChanges.submissions >= 0 ? 'up' : 'down']">
+            <el-icon><Top v-if="monthlyChanges.submissions >= 0" /><Bottom v-else /></el-icon>
+            {{ monthlyChanges.submissions >= 0 ? '+' : '' }}{{ monthlyChanges.submissions }}%
+          </span>
+          <span class="period">较上月</span>
         </div>
       </el-card>
 
       <el-card class="stat-card">
         <div class="stat-content">
-          <div class="stat-icon purple">
-            <el-icon :size="28"><Briefcase /></el-icon>
+          <div class="stat-icon" style="background-color: var(--danger-bg);">
+            <el-icon :size="28" style="color: var(--danger-color);"><TrendCharts /></el-icon>
           </div>
           <div class="stat-info">
-            <span class="stat-value">{{ stats.totalTeachers }}</span>
-            <span class="stat-label">教师数</span>
+            <span class="stat-value">{{ stats.avgScore }}</span>
+            <span class="stat-label">平均分数</span>
           </div>
         </div>
-      </el-card>
-
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon cyan">
-            <el-icon :size="28"><User /></el-icon>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ stats.totalClasses }}</span>
-            <span class="stat-label">班级数</span>
-          </div>
-        </div>
-      </el-card>
-
-      <el-card class="stat-card">
-        <div class="stat-content">
-          <div class="stat-icon orange">
-            <el-icon :size="28"><Clock /></el-icon>
-          </div>
-          <div class="stat-info">
-            <span class="stat-value">{{ stats.pendingSubmissions }}</span>
-            <span class="stat-label">待处理</span>
-          </div>
+        <div class="stat-footer">
+          <span :class="['trend', monthlyChanges.avgScore >= 0 ? 'up' : 'down']">
+            <el-icon><Top v-if="monthlyChanges.avgScore >= 0" /><Bottom v-else /></el-icon>
+            {{ monthlyChanges.avgScore >= 0 ? '+' : '' }}{{ monthlyChanges.avgScore }}%
+          </span>
+          <span class="period">较上月</span>
         </div>
       </el-card>
     </div>
     
-    <div class="main-content">
-      <el-card class="pie-chart-card">
-        <template #header>
-          <span class="card-title">用户分布</span>
-        </template>
-        <div class="pie-chart-container">
-          <div class="pie-chart">
-            <div class="pie-segment student" :style="{ '--percentage': studentPercentage }"></div>
-            <div class="pie-segment teacher" :style="{ '--percentage': teacherPercentage }"></div>
-            <div class="pie-segment admin" :style="{ '--percentage': adminPercentage }"></div>
-            <div class="pie-center">
-              <span class="pie-total">{{ stats.totalUsers }}</span>
-              <span class="pie-label">总用户</span>
+    <el-row :gutter="24">
+      <el-col :span="16">
+        <el-card class="chart-card">
+          <template #header>
+            <div class="card-header">
+              <span>提交趋势</span>
+              <el-radio-group v-model="chartPeriod" size="small">
+                <el-radio-button label="week">近一周</el-radio-button>
+                <el-radio-button label="month">近一月</el-radio-button>
+              </el-radio-group>
+            </div>
+          </template>
+          <div class="chart-container">
+            <div class="chart-placeholder">
+              <div class="chart-bars">
+                <div v-for="(item, index) in chartData" :key="index" class="chart-bar-item">
+                  <div class="bar-wrapper">
+                    <div class="bar" :style="{ height: item.value + '%' }"></div>
+                  </div>
+                  <span class="bar-label">{{ item.label }}</span>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="pie-legend">
-            <div class="legend-item">
-              <span class="legend-color student"></span>
-              <span class="legend-label">学生</span>
-              <span class="legend-value">{{ (studentPercentage * 100).toFixed(1) }}%</span>
+        </el-card>
+      </el-col>
+      
+      <el-col :span="8">
+        <el-card class="pie-chart-card">
+          <template #header>
+            <span>用户分布</span>
+          </template>
+          <div class="pie-chart-container">
+            <div class="pie-chart">
+              <div class="pie-segment student" style="--percentage: 0.7;"></div>
+              <div class="pie-segment teacher" style="--percentage: 0.25;"></div>
+              <div class="pie-segment admin" style="--percentage: 0.05;"></div>
+              <div class="pie-center">
+                <span class="pie-total">{{ stats.totalUsers }}</span>
+                <span class="pie-label">总用户</span>
+              </div>
             </div>
-            <div class="legend-item">
-              <span class="legend-color teacher"></span>
-              <span class="legend-label">教师</span>
-              <span class="legend-value">{{ (teacherPercentage * 100).toFixed(1) }}%</span>
-            </div>
-            <div class="legend-item">
-              <span class="legend-color admin"></span>
-              <span class="legend-label">管理员</span>
-              <span class="legend-value">{{ (adminPercentage * 100).toFixed(1) }}%</span>
+            <div class="pie-legend">
+              <div class="legend-item">
+                <span class="legend-color student"></span>
+                <span class="legend-label">学生</span>
+                <span class="legend-value">70%</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color teacher"></span>
+                <span class="legend-label">教师</span>
+                <span class="legend-value">25%</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-color admin"></span>
+                <span class="legend-label">管理员</span>
+                <span class="legend-value">5%</span>
+              </div>
             </div>
           </div>
-        </div>
-      </el-card>
+        </el-card>
+      </el-col>
+    </el-row>
+    
+    <el-row :gutter="24" style="margin-top: var(--spacing-lg);">
+      <el-col :span="24">
+        <el-card class="recent-card">
+          <template #header>
+            <div class="card-header">
+              <span>提交概况</span>
+            </div>
+          </template>
+          <div class="recent-list">
+            <div class="recent-item">
+              <div class="item-content">
+                <div class="item-header">
+                  <span class="item-name">提交总数</span>
+                  <span class="item-value">{{ stats.totalSubmissions }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div class="item-content">
+                <div class="item-header">
+                  <span class="item-name">已完成评测</span>
+                  <el-tag type="success" size="small">{{ stats.completedSubmissions }}</el-tag>
+                </div>
+              </div>
+            </div>
+            <div class="recent-item">
+              <div class="item-content">
+                <div class="item-header">
+                  <span class="item-name">待评测</span>
+                  <el-tag type="warning" size="small">{{ stats.pendingSubmissions }}</el-tag>
+                </div>
+              </div>
+            </div>
+          </div>
+        </el-card>
+      </el-col>
+          </el-row>
 
-      <el-card class="stats-detail-card">
-        <template #header>
-          <span class="card-title">系统概览</span>
-        </template>
-        <div class="stats-grid">
-          <div class="stat-item">
-            <span class="stat-icon-wrapper primary"><el-icon><User /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.totalUsers }}</span>
-              <span class="stat-name">总用户</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon-wrapper success"><el-icon><Reading /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.totalCourses }}</span>
-              <span class="stat-name">课程</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon-wrapper warning"><el-icon><Document /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.totalAssignments }}</span>
-              <span class="stat-name">作业</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon-wrapper danger"><el-icon><EditPen /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.totalSubmissions }}</span>
-              <span class="stat-name">提交</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon-wrapper info"><el-icon><User /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.totalClasses }}</span>
-              <span class="stat-name">班级</span>
-            </div>
-          </div>
-          <div class="stat-item">
-            <span class="stat-icon-wrapper purple"><el-icon><Briefcase /></el-icon></span>
-            <div class="stat-text">
-              <span class="stat-num">{{ stats.completedSubmissions }}</span>
-              <span class="stat-name">已完成</span>
-            </div>
-          </div>
-        </div>
-      </el-card>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '../../stores/user'
 import { getSystemStats } from '../../api/system'
@@ -212,9 +209,9 @@ import {
   User, 
   Reading, 
   Document, 
-  EditPen, 
-  Briefcase, 
-  Clock,
+  TrendCharts, 
+  Top,
+  Bottom,
   ArrowRight
 } from '@element-plus/icons-vue'
 
@@ -222,35 +219,23 @@ const router = useRouter()
 const userStore = useUserStore()
 
 const currentTime = ref('')
+const chartPeriod = ref('week')
 const loading = ref(false)
 
 const stats = ref({
   totalUsers: 0,
   totalCourses: 0,
-  totalAssignments: 0,
   totalSubmissions: 0,
-  totalStudents: 0,
-  totalTeachers: 0,
-  totalClasses: 0,
+  avgScore: 0,
   pendingSubmissions: 0,
   completedSubmissions: 0
 })
 
-const studentPercentage = computed(() => {
-  if (stats.value.totalUsers === 0) return 0
-  return stats.value.totalStudents / stats.value.totalUsers
-})
+const chartData = ref<{ label: string; value: number }[]>([])
+const recentSubmissions = ref<any[]>([])
+const monthlyChanges = ref({ users: 0, courses: 0, submissions: 0, avgScore: 0 })
 
-const teacherPercentage = computed(() => {
-  if (stats.value.totalUsers === 0) return 0
-  return stats.value.totalTeachers / stats.value.totalUsers
-})
-
-const adminPercentage = computed(() => {
-  if (stats.value.totalUsers === 0) return 0
-  return 1 - studentPercentage.value - teacherPercentage.value
-})
-
+// 加载统计数据
 const loadStats = async () => {
   loading.value = true
   try {
@@ -259,13 +244,41 @@ const loadStats = async () => {
       stats.value = {
         totalUsers: response.data.total_users || response.data.totalUsers || 0,
         totalCourses: response.data.total_courses || response.data.totalCourses || 0,
-        totalAssignments: response.data.total_assignments || response.data.totalAssignments || 0,
         totalSubmissions: response.data.total_submissions || response.data.totalSubmissions || 0,
-        totalStudents: response.data.total_students || response.data.totalStudents || 0,
-        totalTeachers: response.data.total_teachers || response.data.totalTeachers || 0,
-        totalClasses: response.data.total_classes || response.data.totalClasses || 0,
-        pendingSubmissions: response.data.pending_submissions || response.data.pendingSubmissions || 0,
-        completedSubmissions: response.data.completed_submissions || response.data.completedSubmissions || 0
+        avgScore: response.data.avgScore || response.data.avg_score || 0,
+        pendingSubmissions: response.data.pending_submissions || 0,
+        completedSubmissions: response.data.completed_submissions || 0
+      }
+      // 月度变化
+      const mc = response.data.monthlyChanges || {}
+      monthlyChanges.value = {
+        users: mc.users ?? 0,
+        courses: mc.courses ?? 0,
+        submissions: mc.submissions ?? 0,
+        avgScore: mc.avgScore ?? 0
+      }
+      // 图表数据：优先用后端返回的，否则用提交状态分布生成
+      if (response.data.chartData) {
+        chartData.value = response.data.chartData
+      } else {
+        const pending = response.data.pending_submissions || 0
+        const completed = response.data.completed_submissions || 0
+        const total = response.data.total_submissions || 1
+        chartData.value = [
+          { label: '已完成', value: Math.round(completed / total * 100) },
+          { label: '待评测', value: Math.round(pending / total * 100) }
+        ]
+      }
+      // 最近提交
+      if (response.data.recentSubmissions) {
+        recentSubmissions.value = response.data.recentSubmissions.map((s: any) => ({
+          id: s.id,
+          name: s.student_name || '',
+          time: s.time || '',
+          course: s.course_name || '',
+          assignment: s.assignment_title || '',
+          score: s.score ?? 0
+        }))
       }
     }
   } catch (error) {
@@ -341,27 +354,27 @@ const handleLogout = () => {
   }
 }
 
+.header-desc {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-sm);
+  margin: 0;
+}
+
 .current-time {
   font-size: var(--font-size-sm);
   color: var(--text-secondary);
-  font-family: monospace;
+  font-family: var(--font-family-code);
 }
 
 .stats-overview {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-lg);
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-lg);
 }
 
 .stat-card {
-  border-radius: var(--radius-lg);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--shadow-lg);
-  }
+  border: 1px solid var(--border-light);
 }
 
 .stat-content {
@@ -373,50 +386,10 @@ const handleLogout = () => {
 .stat-icon {
   width: 56px;
   height: 56px;
-  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  
-  &.primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: #fff;
-  }
-  
-  &.success {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-    color: #fff;
-  }
-  
-  &.warning {
-    background: linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);
-    color: #fff;
-  }
-  
-  &.danger {
-    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-    color: #fff;
-  }
-  
-  &.info {
-    background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%);
-    color: #fff;
-  }
-  
-  &.purple {
-    background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
-    color: #fff;
-  }
-  
-  &.cyan {
-    background: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
-    color: #fff;
-  }
-  
-  &.orange {
-    background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%);
-    color: #fff;
-  }
+  border-radius: var(--border-radius-md);
 }
 
 .stat-info {
@@ -425,64 +398,135 @@ const handleLogout = () => {
 }
 
 .stat-value {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xxl);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
 .stat-label {
   font-size: var(--font-size-sm);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
+  margin-top: var(--spacing-xs);
 }
 
-.main-content {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-lg);
+.stat-footer {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: var(--spacing-md);
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--border-light);
 }
 
-.pie-chart-card {
-  grid-column: span 1;
+.trend {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
 }
 
-.stats-detail-card {
-  grid-column: span 1;
+.trend.up {
+  color: var(--success-color);
 }
 
-.card-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
+.trend.down {
+  color: var(--danger-color);
+}
+
+.period {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+}
+
+.chart-card,
+.pie-chart-card,
+.recent-card {
+  border: 1px solid var(--border-light);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.chart-container {
+  height: 300px;
+}
+
+.chart-placeholder {
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  padding: var(--spacing-md);
+}
+
+.chart-bars {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+  width: 100%;
+  height: 100%;
+}
+
+.chart-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.bar-wrapper {
+  width: 40px;
+  height: 200px;
+  background-color: var(--bg-tertiary);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  display: flex;
+  align-items: flex-end;
+}
+
+.bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--primary-color) 0%, var(--primary-light) 100%);
+  border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+  transition: height var(--transition-normal);
+}
+
+.bar-label {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
 }
 
 .pie-chart-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: var(--spacing-lg) 0;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-md);
 }
 
 .pie-chart {
   width: 180px;
   height: 180px;
   border-radius: 50%;
-  position: relative;
   background: conic-gradient(
-    #667eea 0deg calc(var(--percentage-student, 0.7) * 360deg),
-    #10b981 calc(var(--percentage-student, 0.7) * 360deg) calc(calc(var(--percentage-student, 0.7) + var(--percentage-teacher, 0.25)) * 360deg),
-    #ef4444 calc(calc(var(--percentage-student, 0.7) + var(--percentage-teacher, 0.25)) * 360deg) 360deg
+    var(--primary-color) 0deg calc(0.7 * 360deg),
+    var(--success-color) calc(0.7 * 360deg) calc(0.95 * 360deg),
+    var(--warning-color) calc(0.95 * 360deg) 360deg
   );
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: var(--spacing-md);
+  position: relative;
 }
 
 .pie-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 100px;
   height: 100px;
+  background-color: var(--bg-primary);
   border-radius: 50%;
-  background: #fff;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -491,13 +535,13 @@ const handleLogout = () => {
 
 .pie-total {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
+  font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
 }
 
 .pie-label {
   font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
 .pie-legend {
@@ -505,7 +549,6 @@ const handleLogout = () => {
   flex-direction: column;
   gap: var(--spacing-sm);
   width: 100%;
-  padding: 0 var(--spacing-md);
 }
 
 .legend-item {
@@ -517,20 +560,12 @@ const handleLogout = () => {
 .legend-color {
   width: 12px;
   height: 12px;
-  border-radius: 3px;
-  
-  &.student {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  }
-  
-  &.teacher {
-    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  }
-  
-  &.admin {
-    background: linear-gradient(135deg, #ef4444 0%, #f97316 100%);
-  }
+  border-radius: var(--border-radius-full);
 }
+
+.legend-color.student { background-color: var(--primary-color); }
+.legend-color.teacher { background-color: var(--success-color); }
+.legend-color.admin { background-color: var(--warning-color); }
 
 .legend-label {
   flex: 1;
@@ -540,97 +575,74 @@ const handleLogout = () => {
 
 .legend-value {
   font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: var(--spacing-md);
-}
-
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md);
-  background: var(--bg-light);
-  border-radius: var(--radius-md);
-  transition: background var(--transition-fast);
-  
-  &:hover {
-    background: var(--bg-hover);
-  }
-}
-
-.stat-icon-wrapper {
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  
-  &.primary {
-    background: rgba(102, 126, 234, 0.1);
-    color: #667eea;
-  }
-  
-  &.success {
-    background: rgba(16, 185, 129, 0.1);
-    color: #10b981;
-  }
-  
-  &.warning {
-    background: rgba(249, 115, 22, 0.1);
-    color: #f97316;
-  }
-  
-  &.danger {
-    background: rgba(239, 68, 68, 0.1);
-    color: #ef4444;
-  }
-  
-  &.info {
-    background: rgba(59, 130, 246, 0.1);
-    color: #3b82f6;
-  }
-  
-  &.purple {
-    background: rgba(168, 85, 247, 0.1);
-    color: #a855f7;
-  }
-}
-
-.stat-text {
+.recent-list {
   display: flex;
   flex-direction: column;
+  gap: var(--spacing-md);
 }
 
-.stat-num {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-bold);
+.recent-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  transition: background-color var(--transition-fast);
+}
+
+.recent-item:hover {
+  background-color: var(--bg-secondary);
+}
+
+.item-content {
+  flex: 1;
+}
+
+.item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.item-name {
+  font-weight: var(--font-weight-medium);
   color: var(--text-primary);
 }
 
-.stat-name {
+.item-time {
   font-size: var(--font-size-xs);
-  color: var(--text-secondary);
+  color: var(--text-tertiary);
 }
 
-@media (max-width: 900px) {
-  .main-content {
-    grid-template-columns: 1fr;
+.item-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  margin-top: var(--spacing-xs);
+}
+
+@media (max-width: 1200px) {
+  .stats-overview {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-dashboard-container {
+    padding: var(--spacing-md);
   }
   
-  .pie-chart-card,
-  .stats-detail-card {
-    grid-column: span 1;
+  .page-header {
+    flex-direction: column;
+    gap: var(--spacing-sm);
   }
   
-  .stats-grid {
+  .stats-overview {
     grid-template-columns: 1fr;
   }
 }
+
 </style>

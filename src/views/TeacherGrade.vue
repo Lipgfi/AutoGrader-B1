@@ -356,7 +356,7 @@ const students = ref([])
 const loadGradingData = async () => {
   try {
     const asgnRes = await getAssignments()
-    const apiAssignments = (asgnRes.code === 200 && asgnRes.data) ? (asgnRes.data || []) : []
+    const apiAssignments = (asgnRes.code === 200 && asgnRes.data) ? (asgnRes.data.assignments || asgnRes.data || []) : []
     const allSubs: any[] = []
     for (const asgn of apiAssignments) {
       try {
@@ -510,10 +510,11 @@ const saveDraft = async () => {
   saving.value = true
   try {
     if (currentStudent.value?.id) {
-      await overrideSubmissionScore(currentStudent.value.id, {
-        overallScore: totalScore.value,
-        overrideReason: gradeForm.remark || undefined
-      })
+      await overrideSubmissionScore(
+        currentStudent.value.id,
+        totalScore.value,
+        gradeForm.remark || ''
+      )
     }
     ElMessage.success('评分已暂存')
   } catch (e) { ElMessage.error('保存失败') }
@@ -529,10 +530,11 @@ const submitGrade = async () => {
   submitting.value = true
   try {
     if (currentStudent.value?.id) {
-      await overrideSubmissionScore(currentStudent.value.id, {
-        overallScore: totalScore.value,
-        overrideReason: gradeForm.remark || undefined
-      })
+      await overrideSubmissionScore(
+        currentStudent.value.id,
+        totalScore.value,
+        gradeForm.remark || ''
+      )
     }
     successDialogVisible.value = true
     gradeHistory.value.unshift({

@@ -1,31 +1,41 @@
 import { request } from './interceptors'
 
-// 获取当前用户信息
 export const getCurrentUser = async () => {
   return await request.get('/users/me')
 }
 
-// 更新当前用户
-export const updateCurrentUser = async (data: any) => {
+export const updateCurrentUser = async (data: {
+  email?: string
+  phone?: string
+  avatar?: string
+  old_password?: string
+  new_password?: string
+}) => {
   return await request.put('/users/me', data)
 }
 
-// 获取用户列表
-export const getUsers = async (params?: any) => {
+export const getUsers = async (params?: {
+  role?: string
+  page?: number
+  size?: number
+}) => {
   return await request.get('/users', params)
 }
 
-// 创建教师账号
-export const createTeacher = async (data: any) => {
+export const createTeacher = async (data: {
+  teacher_id: string
+  email: string
+  real_name: string
+  department?: string
+  initial_password: string
+}) => {
   return await request.post('/users', data)
 }
 
-// 启用/禁用用户
-export const toggleUserStatus = async (userId: string) => {
-  return await request.post(`/users/${userId}/deactivate`)
+export const deleteUser = async (userId: string | number) => {
+  return await request.delete(`/users/${userId}`)
 }
 
-// 删除用户
-export const deleteUser = async (userId: string) => {
-  return await request.delete(`/users/${userId}`)
+export const deactivateUser = async (userId: string | number) => {
+  return await request.post(`/users/${userId}/deactivate`)
 }

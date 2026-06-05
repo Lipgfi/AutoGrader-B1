@@ -39,13 +39,13 @@
       
       <div class="view-toggle">
         <el-radio-group v-model="viewMode" size="small">
-            <el-radio-button value="card">
-              <el-icon><Grid /></el-icon>
-            </el-radio-button>
-            <el-radio-button value="list">
-              <el-icon><List /></el-icon>
-            </el-radio-button>
-          </el-radio-group>
+          <el-radio-button label="card">
+            <el-icon><Grid /></el-icon>
+          </el-radio-button>
+          <el-radio-button label="list">
+            <el-icon><List /></el-icon>
+          </el-radio-button>
+        </el-radio-group>
       </div>
     </div>
     
@@ -247,9 +247,9 @@ const loadCourses = async () => {
       request.get('/submissions/my')
     ])
 
-    const apiCourses = (coursesRes.code === 200 && coursesRes.data) ? (coursesRes.data || []) : []
-    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data || []) : []
-    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data || []) : []
+    const apiCourses = (coursesRes.code === 200 && coursesRes.data) ? (coursesRes.data.courses || coursesRes.data || []) : []
+    const apiClasses = (classesRes.code === 200 && classesRes.data) ? (classesRes.data.classes || classesRes.data || []) : []
+    const apiAssignments = (assignmentsRes.code === 200 && assignmentsRes.data) ? (assignmentsRes.data.assignments || assignmentsRes.data || []) : []
     const apiSubmissions = (submissionsRes.code === 200 && submissionsRes.data) ? (submissionsRes.data || []) : []
 
     // 已完成作业的 assignment_id 集合
